@@ -112,6 +112,12 @@
         #wheel.spinning {
             animation: spin 5s linear forwards;
         }
+        #logoutButton {
+            padding: 15px 30px; /* Увеличиваем кнопку в 1.5 раза */
+            font-size: 24px; /* Увеличиваем шрифт */
+            cursor: pointer;
+            margin-bottom: 30px; /* Увеличиваем отступ */
+        }
     </style>
 </head>
 <body>
@@ -144,6 +150,7 @@
         <button id="addWordButton">Добавить слово</button>
     </div>
     <div id="wordsList"></div>
+    <button id="logoutButton">Выйти</button>
 
     <script>
         const wheel = document.getElementById('wheel');
@@ -264,6 +271,8 @@
                 if (isAdmin) {
                     document.getElementById('admin-controls').style.display = 'block';
                 }
+                localStorage.setItem('storedLogin', login);
+                localStorage.setItem('storedPassword', password);
             } else {
                 alert('Неверный логин или пароль.');
             }
@@ -378,6 +387,15 @@
             } else {
                 alert('Неверный логин или пароль.');
             }
+        });
+
+        document.getElementById('logoutButton').addEventListener('click', () => {
+            localStorage.removeItem('storedLogin');
+            localStorage.removeItem('storedPassword');
+            localStorage.removeItem('isAdmin');
+            document.getElementById('wheel-container').style.display = 'none';
+            document.getElementById('admin-controls').style.display = 'none';
+            showAuthModal();
         });
 
         // Добавляем обработчик событий для кнопок удаления слов
