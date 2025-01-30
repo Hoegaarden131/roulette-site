@@ -11,6 +11,59 @@
             color: white;
             text-align: center;
             padding: 50px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #34495e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .modal-header {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+        }
+        .form-group button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #c0392b;
         }
         .roulette-container {
             position: relative;
@@ -47,95 +100,103 @@
             margin-top: 20px;
             font-size: 24px;
         }
-        .login-form, .register-form {
-            display: none;
-            margin-top: 20px;
-        }
-        .form-group {
-            margin-bottom: 10px;
-        }
     </style>
 </head>
 <body>
 
-    <h1>Рулетка Казино</h1>
-
-    <div id="user-info">
-        <button class="login-button" onclick="toggleLoginForm()">Войти</button>
-        <button class="register-button" onclick="toggleRegisterForm()">Регистрация</button>
-        <div id="login-form" class="login-form">
-            <div class="form-group">
-                <input type="text" id="login-username" placeholder="Имя пользователя">
+    <!-- Modal for login and registration -->
+    <div id="authModal" class="modal" style="display: block;">
+        <div class="modal-content">
+            <div class="modal-header">Авторизация</div>
+            <div id="login-form" class="auth-form">
+                <div class="form-group">
+                    <input type="text" id="login-username" placeholder="Имя пользователя">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="login-password" placeholder="Пароль">
+                </div>
+                <div class="form-group">
+                    <button class="bet-button" onclick="loginUser()">Войти</button>
+                </div>
+                <div class="form-group">
+                    <button class="bet-button" onclick="toggleAuthForm()">Регистрация</button>
+                </div>
             </div>
-            <div class="form-group">
-                <input type="password" id="login-password" placeholder="Пароль">
+            <div id="register-form" class="auth-form" style="display: none;">
+                <div class="form-group">
+                    <input type="text" id="register-username" placeholder="Имя пользователя">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="register-password" placeholder="Пароль">
+                </div>
+                <div class="form-group">
+                    <button class="bet-button" onclick="registerUser()">Зарегистрироваться</button>
+                </div>
+                <div class="form-group">
+                    <button class="bet-button" onclick="toggleAuthForm()">Вход</button>
+                </div>
             </div>
-            <button class="bet-button" onclick="loginUser()">Войти</button>
         </div>
-        <div id="register-form" class="register-form">
-            <div class="form-group">
-                <input type="text" id="register-username" placeholder="Имя пользователя">
-            </div>
-            <div class="form-group">
-                <input type="password" id="register-password" placeholder="Пароль">
-            </div>
-            <button class="bet-button" onclick="registerUser()">Зарегистрироваться</button>
+    </div>
+
+    <!-- Main game content -->
+    <div id="gameContent" style="display: none;">
+        <h1>Рулетка Казино</h1>
+
+        <div class="roulette-container" id="rouletteContainer">
+            <svg viewBox="-200 -200 400 400" id="rouletteWheel">
+                <!-- Draw the wheel sectors -->
+                <defs>
+                    <linearGradient id="sectorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:red;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:black;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <g id="wheelSectors">
+                    <!-- Add sectors here dynamically with JavaScript -->
+                </g>
+                <circle cx="0" cy="0" r="150" fill="none" stroke="white" stroke-width="10" />
+            </svg>
+            <div class="roulette-pointer"></div>
         </div>
-    </div>
 
-    <div class="roulette-container" id="rouletteContainer">
-        <svg viewBox="-200 -200 400 400" id="rouletteWheel">
-            <!-- Draw the wheel sectors -->
-            <defs>
-                <linearGradient id="sectorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:red;stop-opacity:1" />
-                    <stop offset="100%" style="stop-color:black;stop-opacity:1" />
-                </linearGradient>
-            </defs>
-            <g id="wheelSectors">
-                <!-- Add sectors here dynamically with JavaScript -->
-            </g>
-            <circle cx="0" cy="0" r="150" fill="none" stroke="white" stroke-width="10" />
-        </svg>
-        <div class="roulette-pointer"></div>
-    </div>
+        <div class="form-group">
+            <label for="bet-amount">Сумма ставки:</label>
+            <input type="number" id="bet-amount" min="1" value="1">
+        </div>
+        <div class="form-group">
+            <label for="bet-type">Тип ставки:</label>
+            <select id="bet-type">
+                <option value="number">Число</option>
+                <option value="color">Цвет</option>
+                <option value="even_odd">Чет/нечет</option>
+            </select>
+        </div>
+        <div class="form-group" id="number-input" style="display: none;">
+            <label for="bet-number">Выберите число (0-36):</label>
+            <input type="number" id="bet-number" min="0" max="36">
+        </div>
+        <div class="form-group" id="color-input" style="display: none;">
+            <label for="bet-color">Выберите цвет:</label>
+            <select id="bet-color">
+                <option value="red">Красное</option>
+                <option value="black">Черное</option>
+            </select>
+        </div>
+        <div class="form-group" id="even_odd-input" style="display: none;">
+            <label for="bet-even_odd">Выберите чет/нечет:</label>
+            <select id="bet-even_odd">
+                <option value="even">Четное</option>
+                <option value="odd">Нечетное</option>
+            </select>
+        </div>
+        <button class="bet-button" onclick="placeBet()">Сделать ставку</button>
+        <button class="spin-button" onclick="spinRoulette()">Крутить рулетку</button>
 
-    <div class="form-group">
-        <label for="bet-amount">Сумма ставки:</label>
-        <input type="number" id="bet-amount" min="1" value="1">
+        <div class="balance" id="balance">Баланс: $1000</div>
+        <div class="result" id="result">Ожидание результата...</div>
+        <div class="history" id="history">История игр:</div>
     </div>
-    <div class="form-group">
-        <label for="bet-type">Тип ставки:</label>
-        <select id="bet-type">
-            <option value="number">Число</option>
-            <option value="color">Цвет</option>
-            <option value="even_odd">Чет/нечет</option>
-        </select>
-    </div>
-    <div class="form-group" id="number-input" style="display: none;">
-        <label for="bet-number">Выберите число (0-36):</label>
-        <input type="number" id="bet-number" min="0" max="36">
-    </div>
-    <div class="form-group" id="color-input" style="display: none;">
-        <label for="bet-color">Выберите цвет:</label>
-        <select id="bet-color">
-            <option value="red">Красное</option>
-            <option value="black">Черное</option>
-        </select>
-    </div>
-    <div class="form-group" id="even_odd-input" style="display: none;">
-        <label for="bet-even_odd">Выберите чет/нечет:</label>
-        <select id="bet-even_odd">
-            <option value="even">Четное</option>
-            <option value="odd">Нечетное</option>
-        </select>
-    </div>
-    <button class="bet-button" onclick="placeBet()">Сделать ставку</button>
-    <button class="spin-button" onclick="spinRoulette()">Крутить рулетку</button>
-
-    <div class="balance" id="balance">Баланс: $1000</div>
-    <div class="result" id="result">Ожидание результата...</div>
-    <div class="history" id="history">История игр:</div>
 
     <audio id="spinSound" src="https://www.soundjay.com/button/sounds/beep-07.mp3" preload="auto"></audio>
     <audio id="winSound" src="https://www.soundjay.com/button/sounds/coin-01a.mp3" preload="auto"></audio>
@@ -145,26 +206,23 @@
         let history = [];
         let currentBet = null;
 
-        function toggleLoginForm() {
-            document.getElementById('login-form').style.display = 'block';
-            document.getElementById('register-form').style.display = 'none';
-        }
-
-        function toggleRegisterForm() {
-            document.getElementById('register-form').style.display = 'block';
-            document.getElementById('login-form').style.display = 'none';
+        function toggleAuthForm() {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
+            registerForm.style.display = registerForm.style.display === 'none' ? 'block' : 'none';
         }
 
         function loginUser() {
             alert('Вход выполнен!');
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('gameContent').style.display = 'block';
         }
 
         function registerUser() {
             alert('Регистрация завершена!');
-            document.getElementById('register-form').style.display = 'none';
-            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('gameContent').style.display = 'block';
         }
 
         function updateBalance() {
