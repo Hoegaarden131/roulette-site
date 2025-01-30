@@ -279,6 +279,13 @@
         let history = [];
         let currentBet = null;
         let chatMessages = [];
+        let currentPlayer = null;
+
+        const players = {
+            'player1': {name: 'player1', messages: []},
+            'player2': {name: 'player2', messages: []},
+            'player3': {name: 'player3', messages: []}
+        };
 
         function toggleAuthForm() {
             const loginForm = document.getElementById('login-form');
@@ -474,27 +481,37 @@
 
         function findPlayer() {
             const playerName = document.getElementById('search-player').value;
-            alert(`Ищем игрока ${playerName}`);
-            // Здесь можно добавить логику поиска игрока
-        }
-
-        function sendMessage() {
-            const message = document.getElementById('chatInput').value;
-            if (message.trim() !== '') {
-                chatMessages.push(`Вы: ${message}`);
-                document.getElementById('chatInput').value = '';
-                updateChatMessages();
+            if (players[playerName]) {
+                currentPlayer = players[playerName];
+                document.getElementById('chatMessages').innerHTML = '';
+                currentPlayer.messages.forEach(msg => {
+                    addChatMessage(msg);
+                });
+            } else {
+                alert('Игрок не найден');
             }
         }
 
-        function updateChatMessages() {
+        function sendMessage() {
+            if (!currentPlayer) {
+                alert('Выберите игрока для начала чата');
+                return;
+            }
+
+            const message = document.getElementById('chatInput').value;
+            if (message.trim() !== '') {
+                const msg = `Вы: ${message}`;
+                currentPlayer.messages.push(msg);
+                addChatMessage(msg);
+                document.getElementById('chatInput').value = '';
+            }
+        }
+
+        function addChatMessage(message) {
             const chatMessagesDiv = document.getElementById('chatMessages');
-            chatMessagesDiv.innerHTML = '';
-            chatMessages.forEach(msg => {
-                const msgDiv = document.createElement('div');
-                msgDiv.textContent = msg;
-                chatMessagesDiv.appendChild(msgDiv);
-            });
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = message;
+            chatMessagesDiv.appendChild(msgDiv);
             chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
         }
 
