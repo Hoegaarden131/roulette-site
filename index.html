@@ -5,43 +5,165 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мессенджер</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        nav { width: 100%; display: flex; justify-content: space-around; background-color: #ccc; padding: 10px 0; display: none; }
-        .nav-item { cursor: pointer; font-size: 24px; }
-        @media (max-width: 768px) { nav { flex-direction: column; } .nav-item { margin: 10px 0; } }
-        #auth-modal, #user-profile-modal { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; }
-        #auth-box, #user-profile-box { background-color: white; padding: 20px; border-radius: 10px; width: 300px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 16px; }
-        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; }
-        .form-group button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin-right: 10px; }
-        #profile-section { display: none; padding: 20px; text-align: center; }
-        #profile-header { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
-        #profile-photo { width: 150px; height: 150px; border: 2px dashed #ccc; margin: 20px auto; display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        #profile-photo img { max-width: 100%; max-height: 100%; }
-        #chat-section { display: none; padding: 20px; }
-        #chat-messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; }
-        #menu { position: fixed; top: 10px; right: 10px; }
-        #menu-button { background: none; border: none; cursor: pointer; }
-        #menu-button img { width: 30px; }
-        #wheel-container { position: relative; width: 300px; height: 300px; margin-bottom: 20px; }
-        #wheel { width: 100%; height: 100%; border-radius: 50%; transition: transform 5s ease-out; position: relative; }
-        #pointer { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 30px solid black; position: absolute; top: -15px; left: calc(50% - 15px); }
-        #spinButton { padding: 15px 30px; font-size: 24px; cursor: pointer; margin-bottom: 30px; }
-        .spinning { transition: transform 5s ease-out; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #f0f0f0; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+        }
+        nav { 
+            width: 100%; 
+            display: flex; 
+            justify-content: space-around; 
+            background-color: #ccc; 
+            padding: 10px 0; 
+            display: none; /* Скрыто до авторизации */
+        }
+        .nav-item { 
+            cursor: pointer; 
+            font-size: 24px; 
+        }
+        @media (max-width: 768px) { 
+            nav { flex-direction: column; } 
+            .nav-item { margin: 10px 0; } 
+        }
+        #auth-modal, #user-profile-modal { 
+            position: fixed; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            background-color: rgba(0, 0, 0, 0.5); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        #auth-box, #user-profile-box { 
+            background-color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            width: 300px; 
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); 
+        }
+        .form-group { 
+            margin-bottom: 15px; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+            font-size: 16px; 
+        }
+        .form-group input { 
+            width: 100%; 
+            padding: 8px; 
+            box-sizing: border-box; 
+        }
+        .form-group button { 
+            padding: 10px 20px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            margin-right: 10px; 
+        }
+        #profile-section { 
+            display: none; 
+            padding: 20px; 
+            text-align: center; 
+        }
+        #profile-header { 
+            font-size: 24px; 
+            font-weight: bold; 
+            margin-bottom: 20px; 
+        }
+        #profile-photo { 
+            width: 150px; 
+            height: 150px; 
+            border: 2px dashed #ccc; 
+            margin: 20px auto; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            cursor: pointer; 
+        }
+        #profile-photo img { 
+            max-width: 100%; 
+            max-height: 100%; 
+        }
+        #chat-section { 
+            display: none; 
+            padding: 20px; 
+        }
+        #chat-messages { 
+            border: 1px solid #ccc; 
+            padding: 10px; 
+            height: 300px; 
+            overflow-y: auto; 
+        }
+        #menu { 
+            position: fixed; 
+            top: 10px; 
+            right: 10px; 
+        }
+        #menu-button { 
+            background: none; 
+            border: none; 
+            cursor: pointer; 
+        }
+        #menu-button img { 
+            width: 30px; 
+        }
+        #wheel-container { 
+            position: relative; 
+            width: 300px; 
+            height: 300px; 
+            margin-bottom: 20px; 
+        }
+        #wheel { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%; 
+            transition: transform 5s ease-out; 
+            position: relative; 
+        }
+        #pointer { 
+            width: 0; 
+            height: 0; 
+            border-left: 15px solid transparent; 
+            border-right: 15px solid transparent; 
+            border-bottom: 30px solid black; 
+            position: absolute; 
+            top: -15px; 
+            left: calc(50% - 15px); 
+        }
+        #spinButton { 
+            padding: 15px 30px; 
+            font-size: 24px; 
+            cursor: pointer; 
+            margin-bottom: 30px; 
+        }
+        .spinning { 
+            transition: transform 5s ease-out; 
+        }
     </style>
 </head>
 <body>
+    <!-- Навигационная панель -->
     <nav id="nav">
         <div class="nav-item" id="roulette-tab">Рулетка</div>
         <div class="nav-item" id="profile-tab">Профиль</div>
         <div class="nav-item" id="chats-tab">Чаты</div>
     </nav>
 
+    <!-- Меню -->
     <div id="menu">
         <button id="menu-button"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'><path d='M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z'/></svg>" alt="Menu"></button>
     </div>
 
+    <!-- Модальное окно авторизации -->
     <div id="auth-modal">
         <div id="auth-box">
             <div class="auth-form">
@@ -62,6 +184,7 @@
         </div>
     </div>
 
+    <!-- Модальное окно регистрации -->
     <div id="register-modal" style="display: none;">
         <div id="register-box">
             <div class="auth-form">
@@ -85,6 +208,7 @@
         </div>
     </div>
 
+    <!-- Профиль пользователя -->
     <div id="profile-section">
         <div id="profile-header"></div>
         <div id="profile-photo">Нажмите, чтобы загрузить фото</div>
@@ -95,6 +219,7 @@
         </div>
     </div>
 
+    <!-- Настройки -->
     <div id="settings-section" style="display: none;">
         <div class="form-group">
             <label for="update-login">Изменить ник:</label>
@@ -108,6 +233,7 @@
         </div>
     </div>
 
+    <!-- Рулетка -->
     <div id="roulette-section" style="display: none;">
         <div id="wheel-container">
             <div id="wheel"></div>
@@ -121,18 +247,23 @@
         <button id="spinButton">Spin!</button>
     </div>
 
+    <!-- Чат -->
     <div id="chat-section" style="display: none;">
         <div id="chat-messages"></div>
         <input type="text" id="message-input" placeholder="Введите сообщение">
         <button id="send-message-button">Отправить</button>
     </div>
 
+    <!-- Чаты -->
     <div id="chats-section" style="display: none;">
-        <div id="active-chats"></div>
+        <div id="active-chats">
+            <!-- Здесь будут активные чаты -->
+        </div>
     </div>
 
-    <div id="user-profile-modal" style="display: none;">
-        <div id="user-profile-box">
+    <!-- Модальное окно профиля пользователя -->
+    <div id="user-profile-modal" style="display: none; position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center;">
+        <div id="user-profile-box" style="background-color: white; padding: 20px; border-radius: 10px; width: 300px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);">
             <div id="user-profile-photo">Фото профиля</div>
             <div id="user-profile-nickname"></div>
             <button id="send-message-to-user">Отправить сообщение</button>
@@ -151,22 +282,30 @@
         const profilePhoto = document.getElementById('profile-photo');
         let storedLogin;
 
+        // Хэширование пароля
         function hashPassword(password) {
             return crypto.subtle.digest('SHA-256', new TextEncoder().encode(password)).then(hashBuffer => {
                 return Array.from(new Uint8Array(hashBuffer)).map(byte => byte.toString(16).padStart(2, '0')).join('');
             });
         }
 
+        // Валидация логина и пароля
         function validateLogin(login) { return /^[a-zA-Z0-9]{1,12}$/.test(login); }
         function validatePassword(password) { return /^\d{4,8}$/.test(password); }
 
+        // Показать модальное окно авторизации
         function showAuthModal() { authModal.style.display = 'flex'; }
+        // Скрыть модальное окно авторизации
         function hideAuthModal() { authModal.style.display = 'none'; }
+        // Показать модальное окно регистрации
         function showRegisterModal() { registerModal.style.display = 'flex'; authModal.style.display = 'none'; }
+        // Скрыть модальное окно регистрации
         function hideRegisterModal() { registerModal.style.display = 'none'; authModal.style.display = 'flex'; }
 
+        // Обработчик нажатия кнопки "Регистрация"
         registerButton.addEventListener('click', showRegisterModal);
 
+        // Обработчик нажатия кнопки "Зарегистрироваться"
         registerSubmitButton.addEventListener('click', async () => {
             const newLogin = document.getElementById('new-login').value.trim();
             const newPassword = document.getElementById('new-password').value.trim();
@@ -181,27 +320,37 @@
             hideRegisterModal();
         });
 
+        // Обработчик нажатия кнопки "Вход"
         loginButton.addEventListener('click', async () => {
             const login = document.getElementById('login').value.trim();
             const password = document.getElementById('password').value.trim();
-            if (!validateLogin(login) || !validatePassword(password)) { alert('Неверный ник или пароль.'); return; }
+            if (!validateLogin(login) || !validatePassword(password)) { 
+                alert('Неверный ник или пароль.'); 
+                return; 
+            }
             const hashedPassword = await hashPassword(password);
             if (users[login] === hashedPassword) {
                 localStorage.setItem('storedLogin', login);
                 hideAuthModal();
                 document.getElementById('nav').style.display = 'flex';
                 initializeProfile();
-            } else { alert('Неверный ник или пароль.'); }
+            } else { 
+                alert('Неверный ник или пароль.'); 
+            }
         });
 
+        // Инициализация при загрузке страницы
         window.onload = () => {
             storedLogin = localStorage.getItem('storedLogin');
             if (storedLogin && users[storedLogin]) {
                 document.getElementById('nav').style.display = 'flex';
                 initializeProfile();
-            } else { showAuthModal(); }
+            } else { 
+                showAuthModal(); 
+            }
         };
 
+        // Обработчик выхода из аккаунта
         document.getElementById('logoutButton').addEventListener('click', () => {
             localStorage.removeItem('storedLogin');
             document.getElementById('nav').style.display = 'none';
@@ -209,6 +358,7 @@
             showAuthModal();
         });
 
+        // Инициализация профиля
         function initializeProfile() {
             profileHeader.innerText = `Профиль пользователя ${storedLogin}`;
             profileSection.style.display = 'block';
@@ -232,6 +382,7 @@
                 fileInput.click();
             });
 
+            // Поиск пользователей
             document.getElementById('search-users-button').addEventListener('click', async () => {
                 const searchQuery = document.getElementById('search-users').value.trim();
                 if (users[searchQuery]) {
@@ -244,13 +395,17 @@
                     userProfileNickname.innerText = `Ник: ${searchQuery}`;
                     userProfileModal.style.display = 'flex';
 
+                    // Отправить сообщение
                     document.getElementById('send-message-to-user').addEventListener('click', () => {
                         userProfileModal.style.display = 'none';
                         openChat(searchQuery);
                     });
-                } else { alert('Пользователь не найден.'); }
+                } else { 
+                    alert('Пользователь не найден.'); 
+                }
             });
 
+            // Изменение данных профиля
             document.getElementById('update-login-button').addEventListener('click', async () => {
                 const updateLogin = document.getElementById('update-login').value.trim();
                 if (validateLogin(updateLogin)) {
@@ -262,7 +417,9 @@
                     alert('Ник успешно изменен.');
                     initializeProfile();
                     document.getElementById('settings-section').style.display = 'none';
-                } else { alert('Некорректный ник.'); }
+                } else { 
+                    alert('Некорректный ник.'); 
+                }
             });
 
             document.getElementById('update-password-button').addEventListener('click', async () => {
@@ -272,12 +429,18 @@
                     localStorage.setItem('users', JSON.stringify(users));
                     alert('Пароль успешно изменен.');
                     document.getElementById('settings-section').style.display = 'none';
-                } else { alert('Некорректный пароль.'); }
+                } else { 
+                    alert('Некорректный пароль.'); 
+                }
             });
         }
 
-        document.getElementById('menu-button').addEventListener('click', () => { document.getElementById('settings-section').style.display = 'block'; });
+        // Открытие настроек профиля
+        document.getElementById('menu-button').addEventListener('click', () => { 
+            document.getElementById('settings-section').style.display = 'block'; 
+        });
 
+        // WebSocket для чата (замените ws://yourserver.com на ваш сервер)
         const socket = new WebSocket('ws://yourserver.com');
         socket.onopen = () => { console.log('Соединение установлено'); };
         socket.onmessage = (event) => {
@@ -286,27 +449,46 @@
             notify(`Новое сообщение: ${event.data}`);
         };
 
+        // Уведомления
         function notify(message) {
-            if (!("Notification" in window)) { alert("Этот браузер не поддерживает уведомления."); }
-            else if (Notification.permission === "granted") { new Notification(message); }
-            else if (Notification.permission !== "denied") {
-                Notification.requestPermission().then(permission => { if (permission === "granted") { new Notification(message); } });
+            if (!("Notification" in window)) { 
+                alert("Этот браузер не поддерживает уведомления."); 
+            } else if (Notification.permission === "granted") { 
+                new Notification(message); 
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => { 
+                    if (permission === "granted") { 
+                        new Notification(message); 
+                    } 
+                });
             }
         }
 
+        // Отправка сообщения
         document.getElementById('send-message-button').addEventListener('click', () => {
             const message = document.getElementById('message-input').value.trim();
-            if (message) { socket.send(message); document.getElementById('message-input').value = ''; }
+            if (message) { 
+                socket.send(message); 
+                document.getElementById('message-input').value = ''; 
+            }
         });
 
-        document.getElementById('profile-tab').addEventListener('click', () => { document.getElementById('profile-section').style.display = 'block'; document.getElementById('chat-section').style.display = 'none'; });
-        document.getElementById('roulette-tab').addEventListener('click', () => { document.getElementById('roulette-section').style.display = 'block'; document.getElementById('chat-section').style.display = 'none'; });
+        // Переключение между вкладками
+        document.getElementById('profile-tab').addEventListener('click', () => { 
+            document.getElementById('profile-section').style.display = 'block'; 
+            document.getElementById('chat-section').style.display = 'none'; 
+        });
+        document.getElementById('roulette-tab').addEventListener('click', () => { 
+            document.getElementById('roulette-section').style.display = 'block'; 
+            document.getElementById('chat-section').style.display = 'none'; 
+        });
         document.getElementById('chats-tab').addEventListener('click', () => {
             document.getElementById('chats-section').style.display = 'block';
-            document.getElementById('chat-section').style.display = 'none';
+    document.getElementById('chat-section').style.display = 'none';
             document.getElementById('active-chats').innerHTML = Object.keys(chats).map(chatUser => `<div class="chat-user" onclick="openChat('${chatUser}')">${chatUser}</div>`).join('');
         });
 
+        // Логика рулетки
         const wheel = document.getElementById('wheel');
         const spinButton = document.getElementById('spinButton');
         const wordInput = document.getElementById('wordInput');
@@ -314,8 +496,13 @@
         const wordsList = document.getElementById('wordsList');
         let words = [], angle = 0;
 
+        // Обновление колеса рулетки
         function updateWheel() {
-            if (words.length === 0) { wheel.style.background = 'none'; wheel.innerHTML = ''; return; }
+            if (words.length === 0) { 
+                wheel.style.background = 'none'; 
+                wheel.innerHTML = ''; 
+                return; 
+            }
             let gradient = '';
             const segmentAngle = 360 / words.length;
             for (let i = 0; i < words.length; i++) {
@@ -333,6 +520,7 @@
             }
         }
 
+        // Добавление слова
         addWordButton.addEventListener('click', () => {
             const word = wordInput.value.trim();
             if (word && !words.includes(word)) {
@@ -340,9 +528,12 @@
                 wordInput.value = '';
                 wordsList.appendChild(Object.assign(document.createElement('div'), { className: 'word-item', innerHTML: `${word} <button class="delete-word-button">Удалить</button>` }));
                 updateWheel();
-            } else if (word) { alert('Это слово уже добавлено!'); }
+            } else if (word) { 
+                alert('Это слово уже добавлено!'); 
+            }
         });
 
+        // Удаление слова
         wordsList.addEventListener('click', (event) => {
             if (event.target.classList.contains('delete-word-button')) {
                 const wordItem = event.target.parentElement;
@@ -352,8 +543,12 @@
             }
         });
 
+        // Запуск рулетки
         spinButton.addEventListener('click', () => {
-            if (words.length === 0) { alert('Пожалуйста, добавьте хотя бы одно слово.'); return; }
+            if (words.length === 0) { 
+                alert('Пожалуйста, добавьте хотя бы одно слово.'); 
+                return; 
+            }
             const randomDegree = Math.floor(Math.random() * 360) + 3600;
             angle += randomDegree;
             wheel.classList.add('spinning');
@@ -364,7 +559,16 @@
             }, 5000);
         });
 
+        // Пример данных о чатах (в реальном проекте это будет из базы данных)
         const chats = { user1: [{ sender: 'user1', message: 'Привет!' }], user2: [{ sender: 'user2', message: 'Как дела?' }] };
 
+        // Открытие чата
         function openChat(user) {
-            const chatMessages = document.getElementById
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = chats[user].map(msg => `<div>${msg.sender}: ${msg.message}</div>`).join('');
+            document.getElementById('chat-section').style.display = 'block';
+            document.getElementById('chats-section').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
