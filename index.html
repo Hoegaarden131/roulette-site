@@ -354,8 +354,8 @@
                 <input type="text" id="search-player" placeholder="Поиск игрока...">
                 <button class="chat-button" onclick="findPlayer()">Найти</button>
             </div>
-            <div class="chat-messages" id="chatMessages"></div>
-            <div class="chat-input">
+            <div id="chatMessages"></div>
+            <div id="chatInputDiv" style="display: none;">
                 <input type="text" id="chatInput" placeholder="Введите сообщение...">
                 <button class="chat-button" onclick="sendMessage()">Отправить</button>
             </div>
@@ -416,7 +416,7 @@
             const password = document.getElementById('register-password').value;
             const players = JSON.parse(localStorage.getItem('players')) || {};
             if (!players[username]) {
-                players[username] = {name: username, password: password, balance: 1000, spins: 0, wins: 0, losses: 0, avatar: ''};
+                players[username] = {name: username, password: password, balance: 1000, spins: 0, wins: 0, losses: 0, avatar: '', messages: []};
                 localStorage.setItem('players', JSON.stringify(players));
                 alert('Регистрация завершена!');
                 document.getElementById('authModal').style.display = 'none';
@@ -616,6 +616,7 @@
                 currentPlayer.messages.forEach(msg => {
                     addChatMessage(msg);
                 });
+                document.getElementById('chatInputDiv').style.display = 'block';
             } else {
                 alert('Игрок не найден');
             }
@@ -668,6 +669,7 @@
             user.balance += 1000;
             updateBalance();
             saveUser();
+            updateProfile(); // Update profile after adding balance
         }
 
         function saveUser() {
@@ -708,6 +710,7 @@
                 alert('Ошибка при изменении данных');
             }
             document.getElementById('settingsModal').style.display = 'none';
+            updateProfile(); // Update profile after changing settings
         }
 
         document.getElementById('bet-type').addEventListener('change', function () {
@@ -727,7 +730,7 @@
             }
         };
 
-        updateBalance();
+        // Re-draw the wheel on initialization
         drawWheel();
     </script>
 
