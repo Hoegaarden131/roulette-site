@@ -3,38 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Рулетка</title>
+    <title>Мессенджер</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f0f0f0;
-            margin: 0;
-            font-family: Arial, sans-serif;
         }
         nav {
             width: 100%;
             display: flex;
-            justify-content: center;
+            justify-content: space-around;
             background-color: #ccc;
             padding: 10px 0;
+            display: none; /* Скрыто до авторизации */
         }
         .nav-item {
-            margin: 0 20px;
             cursor: pointer;
             font-size: 24px;
         }
         #auth-modal {
-            display: none;
             position: fixed;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
             justify-content: center;
             align-items: center;
         }
@@ -52,7 +52,7 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            font-size: 21px;
+            font-size: 16px;
         }
         .form-group input {
             width: 100%;
@@ -60,79 +60,51 @@
             box-sizing: border-box;
         }
         .form-group button {
-            padding: 15px 22.5px;
-            font-size: 24px;
+            padding: 10px 20px;
+            font-size: 16px;
             cursor: pointer;
-            margin-right: 15px;
-        }
-        #wheel-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        #wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            transition: transform 5s ease-out;
-            position: relative;
-        }
-        #pointer {
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-bottom: 30px solid black;
-            position: absolute;
-            top: -15px;
-            left: calc(50% - 15px);
-        }
-        #spinButton {
-            padding: 15px 30px;
-            font-size: 24px;
-            cursor: pointer;
-            margin-bottom: 30px;
+            margin-right: 10px;
         }
         #profile-section {
             display: none;
-            width: 100%;
             padding: 20px;
+            text-align: center;
         }
         #profile-header {
-            font-size: 36px;
+            font-size: 24px;
             font-weight: bold;
             margin-bottom: 20px;
         }
-        #chat-window {
-            display: none;
-            width: 300px;
-            height: 400px;
-            border: 1px solid #ccc;
-            padding: 10px;
-            position: fixed;
-            right: 10px;
-            bottom: 10px;
+        #profile-photo {
+            width: 150px;
+            height: 150px;
+            border: 2px dashed #ccc;
+            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
         }
-        /* Добавлен класс spinning */
-        .spinning {
-            transition: transform 5s ease-out;
+        #profile-photo img {
+            max-width: 100%;
+            max-height: 100%;
         }
     </style>
 </head>
 <body>
-    <nav>
+    <nav id="nav">
         <div class="nav-item" id="roulette-tab">Рулетка</div>
         <div class="nav-item" id="profile-tab">Профиль</div>
     </nav>
+
+    <!-- Модальное окно авторизации -->
     <div id="auth-modal">
         <div id="auth-box">
             <div class="auth-form">
                 <h2>Авторизация</h2>
                 <div class="form-group">
-                    <label for="login">Логин:</label>
-                    <input type="text" id="login" placeholder="Введите логин">
+                    <label for="login">Ник:</label>
+                    <input type="text" id="login" placeholder="Введите ник">
                 </div>
                 <div class="form-group">
                     <label for="password">Пароль:</label>
@@ -145,162 +117,15 @@
             </div>
         </div>
     </div>
-    <div id="wheel-container">
-        <div id="wheel"></div>
-        <div id="pointer"></div>
-    </div>
-    <button id="spinButton">Spin!</button>
-    <div id="admin-controls" style="display: none;">
-        <input type="text" id="wordInput" placeholder="Введите слово">
-        <button id="addWordButton">Добавить слово</button>
-    </div>
-    <div id="wordsList"></div>
-    <button id="logoutButton">Выйти</button>
-    <div id="profile-section">
-        <div id="profile-header"></div>
-        <div id="profile-stats">
-            <p>Количество прокруток колеса: <span id="spins-count">0</span></p>
-            <p>Количество друзей: <span id="friends-count">0</span></p>
-        </div>
-        <div id="friends-list">
-            <p>Список друзей:</p>
-            <ul id="friends-ul"></ul>
-        </div>
-        <div id="search-users">
-            <input type="text" id="search-input" placeholder="Поиск по логинам">
-            <button id="search-button">Поиск</button>
-            <div id="user-profile"></div>
-        </div>
-    </div>
-    <div id="chat-window" class="chat-window">
-        <div id="chat-messages" style="overflow-y: auto; height: 300px;"></div>
-        <input type="text" id="message-input" placeholder="Введите сообщение">
-        <button id="send-message-button">Отправить</button>
-    </div>
-    <script>
-        // Инициализация переменных
-        const wheel = document.getElementById('wheel');
-        const spinButton = document.getElementById('spinButton');
-        const wordInput = document.getElementById('wordInput');
-        const addWordButton = document.getElementById('addWordButton');
-        const wordsList = document.getElementById('wordsList');
-        let words = [];
-        let angle = 0;
-        let isAdmin = false;
-        let spinsCount = 0;
 
-        // Чат
-        const chatMessages = document.getElementById('chat-messages');
-        const messageInput = document.getElementById('message-input');
-        const sendMessageButton = document.getElementById('send-message-button');
-        let messages = JSON.parse(localStorage.getItem('chatMessages')) || [];
-
-        // Друзья
-        const friendsList = document.getElementById('friends-ul');
-        const searchInput = document.getElementById('search-input');
-        const searchButton = document.getElementById('search-button');
-        let friends = JSON.parse(localStorage.getItem('friends')) || [];
-
-        // Безопасность: Хэширование паролей
-        function hashPassword(password) {
-            let hash = 0;
-            for (let i = 0; i < password.length; i++) {
-                hash = (hash << 5) - hash + password.charCodeAt(i);
-                hash |= 0;
-            }
-            return hash.toString();
-        }
-
-        // Инициализация профиля
-        function initializeProfile() {
-            const storedLogin = localStorage.getItem('storedLogin');
-            if (storedLogin) {
-                document.getElementById('profile-header').innerText = `Профиль пользователя ${storedLogin}`;
-                document.getElementById('spins-count').innerText = spinsCount;
-                renderFriends();
-            }
-        }
-
-        // Отображение друзей
-        function renderFriends() {
-            friendsList.innerHTML = '';
-            friends.forEach(friend => {
-                const friendElement = document.createElement('li');
-                friendElement.innerText = friend;
-                friendsList.appendChild(friendElement);
-            });
-            document.getElementById('friends-count').innerText = friends.length;
-        }
-
-        // Поиск и добавление друзей
-        searchButton.addEventListener('click', () => {
-            const login = searchInput.value.trim();
-            const users = JSON.parse(localStorage.getItem('users')) || {};
-            if (login && !friends.includes(login) && users[login]) {
-                friends.push(login);
-                localStorage.setItem('friends', JSON.stringify(friends));
-                alert(`Пользователь ${login} добавлен в друзья.`);
-                renderFriends();
-            } else if (!users[login]) {
-                alert('Пользователь с таким логином не найден.');
-            } else if (friends.includes(login)) {
-                alert('Этот пользователь уже в списке друзей.');
-            }
-        });
-
-        // Сохранение и отображение сообщений чата
-        function renderMessages() {
-            chatMessages.innerHTML = '';
-            messages.forEach(msg => {
-                const messageElement = document.createElement('div');
-                messageElement.innerText = msg;
-                chatMessages.appendChild(messageElement);
-            });
-        }
-
-        sendMessageButton.addEventListener('click', () => {
-            const message = messageInput.value.trim();
-            if (message) {
-                messages.push(message);
-                localStorage.setItem('chatMessages', JSON.stringify(messages));
-                messageInput.value = '';
-                renderMessages();
-            }
-        });
-
-        renderMessages();
-
-        // Авторизация и регистрация
-        const authModal = document.getElementById('auth-modal');
-        const loginForm = document.querySelector('.auth-form');
-        const loginButton = document.getElementById('loginButton');
-        const registerButton = document.getElementById('registerButton');
-        let users = JSON.parse(localStorage.getItem('users')) || {};
-        const adminLogin = 'Hoegaard';
-        const adminPassword = hashPassword('3322');
-
-        function showAuthModal() {
-            authModal.style.display = 'flex';
-        }
-
-        function hideAuthModal() {
-            authModal.style.display = 'none';
-        }
-
-        function validateLogin(login) {
-            return /^[a-zA-Z]{1,8}$/.test(login);
-        }
-
-        function validatePassword(password) {
-            return /^\d{4}$/.test(password);
-        }
-
-        registerButton.addEventListener('click', () => {
-            const registerFormHtml = `
+    <!-- Модальное окно регистрации -->
+    <div id="register-modal" style="display: none;">
+        <div id="register-box">
+            <div class="auth-form">
                 <h2>Регистрация</h2>
                 <div class="form-group">
-                    <label for="new-login">Логин:</label>
-                    <input type="text" id="new-login" placeholder="Введите логин">
+                    <label for="new-login">Ник:</label>
+                    <input type="text" id="new-login" placeholder="Введите ник">
                 </div>
                 <div class="form-group">
                     <label for="new-password">Пароль:</label>
@@ -313,188 +138,155 @@
                 <div class="form-group">
                     <button id="registerSubmitButton">Зарегистрироваться</button>
                 </div>
-            `;
-            loginForm.innerHTML = registerFormHtml;
-            const registerSubmitButton = document.getElementById('registerSubmitButton');
-            const newLoginInput = document.getElementById('new-login');
-            const newPasswordInput = document.getElementById('new-password');
-            const confirmPasswordInput = document.getElementById('confirm-password');
-            registerSubmitButton.addEventListener('click', () => {
-                const newLogin = newLoginInput.value.trim();
-                const newPassword = newPasswordInput.value.trim();
-                const confirmPassword = confirmPasswordInput.value.trim();
-                if (!validateLogin(newLogin)) {
-                    alert('Логин должен содержать только латинские буквы и быть не более 8 символов.');
-                    return;
-                }
-                if (!validatePassword(newPassword)) {
-                    alert('Пароль должен состоять из 4 цифр.');
-                    return;
-                }
-                if (newPassword !== confirmPassword) {
-                    alert('Пароли не совпадают.');
-                    return;
-                }
-                if (users[newLogin]) {
-                    alert('Пользователь с таким логином уже существует.');
-                    return;
-                }
-                users[newLogin] = hashPassword(newPassword);
-                localStorage.setItem('users', JSON.stringify(users));
-                alert('Регистрация успешно завершена! Теперь вы можете войти.');
-                loginForm.innerHTML = `
-                    <h2>Авторизация</h2>
-                    <div class="form-group">
-                        <label for="login">Логин:</label>
-                        <input type="text" id="login" placeholder="Введите логин">
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Пароль:</label>
-                        <input type="password" id="password" placeholder="Введите пароль">
-                    </div>
-                    <div class="form-group">
-                        <button id="loginButton">Вход</button>
-                        <button id="registerButton">Регистрация</button>
-                    </div>
-                `;
-                document.getElementById('loginButton').addEventListener('click', handleLogin);
-                document.getElementById('registerButton').addEventListener('click', handleRegister);
-            });
+            </div>
+        </div>
+    </div>
+
+    <!-- Профиль пользователя -->
+    <div id="profile-section">
+        <div id="profile-header"></div>
+        <div id="profile-photo">Нажмите, чтобы загрузить фото</div>
+    </div>
+
+    <script>
+        const users = JSON.parse(localStorage.getItem('users')) || {};
+        const authModal = document.getElementById('auth-modal');
+        const registerModal = document.getElementById('register-modal');
+        const loginForm = document.querySelector('.auth-form');
+        const loginButton = document.getElementById('loginButton');
+        const registerButton = document.getElementById('registerButton');
+        const registerSubmitButton = document.getElementById('registerSubmitButton');
+        const newLoginInput = document.getElementById('new-login');
+        const newPasswordInput = document.getElementById('new-password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        const profileSection = document.getElementById('profile-section');
+        const profileHeader = document.getElementById('profile-header');
+        const profilePhoto = document.getElementById('profile-photo');
+        let storedLogin;
+
+        function hashPassword(password) {
+            return password.split('').reduce((hash, char) => ((hash << 5) - hash + char.charCodeAt(0)) | 0, 0).toString();
+        }
+
+        function validateLogin(login) {
+            return /^[a-zA-Z0-9]{1,12}$/.test(login);
+        }
+
+        function validatePassword(password) {
+            return /^\d{4,8}$/.test(password);
+        }
+
+        function showAuthModal() {
+            authModal.style.display = 'flex';
+        }
+
+        function hideAuthModal() {
+            authModal.style.display = 'none';
+        }
+
+        function showRegisterModal() {
+            registerModal.style.display = 'flex';
+            authModal.style.display = 'none';
+        }
+
+        function hideRegisterModal() {
+            registerModal.style.display = 'none';
+            authModal.style.display = 'flex';
+        }
+
+        registerButton.addEventListener('click', () => {
+            showRegisterModal();
         });
 
-        function handleLogin() {
+        registerSubmitButton.addEventListener('click', () => {
+            const newLogin = newLoginInput.value.trim();
+            const newPassword = newPasswordInput.value.trim();
+            const confirmPassword = confirmPasswordInput.value.trim();
+            if (!validateLogin(newLogin)) {
+                alert('Ник должен содержать только латинские буквы и цифры, не более 12 символов.');
+                return;
+            }
+            if (!validatePassword(newPassword)) {
+                alert('Пароль должен состоять из 4-8 арабских цифр.');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                alert('Пароли не совпадают.');
+                return;
+            }
+            if (users[newLogin]) {
+                alert('Пользователь с таким ником уже существует.');
+                return;
+            }
+            users[newLogin] = hashPassword(newPassword);
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Регистрация успешно завершена! Теперь вы можете войти.');
+            hideRegisterModal();
+        });
+
+        loginButton.addEventListener('click', () => {
             const login = document.getElementById('login').value.trim();
             const password = document.getElementById('password').value.trim();
             const hashedPassword = hashPassword(password);
             if (validateLogin(login) && validatePassword(password) && users[login] === hashedPassword) {
                 localStorage.setItem('storedLogin', login);
-                localStorage.setItem('storedPassword', hashedPassword);
                 hideAuthModal();
-                document.getElementById('wheel-container').style.display = 'block';
-                if (login === adminLogin && hashedPassword === adminPassword) {
-                    isAdmin = true;
-                    localStorage.setItem('isAdmin', 'true');
-                    document.getElementById('admin-controls').style.display = 'block';
-                } else {
-                    isAdmin = false;
-                    localStorage.setItem('isAdmin', 'false');
-                    document.getElementById('admin-controls').style.display = 'none';
-                }
+                document.getElementById('nav').style.display = 'flex';
                 initializeProfile();
             } else {
-                alert('Неверный логин или пароль.');
+                alert('Неверный ник или пароль.');
             }
-        }
-
-        function handleRegister() {
-            registerButton.click();
-        }
+        });
 
         window.onload = () => {
-            if (Object.keys(users).length === 0) {
-                showAuthModal();
+            storedLogin = localStorage.getItem('storedLogin');
+            if (storedLogin && users[storedLogin]) {
+                document.getElementById('nav').style.display = 'flex';
+                initializeProfile();
             } else {
-                const storedLogin = localStorage.getItem('storedLogin');
-                const storedPassword = localStorage.getItem('storedPassword');
-                const storedIsAdmin = localStorage.getItem('isAdmin') === 'true';
-                if (storedLogin && storedPassword && users[storedLogin] === storedPassword) {
-                    document.getElementById('wheel-container').style.display = 'block';
-                    isAdmin = storedIsAdmin;
-                    if (isAdmin) {
-                        document.getElementById('admin-controls').style.display = 'block';
-                    }
-                    initializeProfile();
-                } else {
-                    showAuthModal();
-                }
+                showAuthModal();
             }
         };
 
         document.getElementById('logoutButton').addEventListener('click', () => {
             localStorage.removeItem('storedLogin');
-            localStorage.removeItem('storedPassword');
-            localStorage.removeItem('isAdmin');
-            document.getElementById('wheel-container').style.display = 'none';
-            document.getElementById('admin-controls').style.display = 'none';
+            document.getElementById('nav').style.display = 'none';
             document.getElementById('profile-section').style.display = 'none';
-            document.getElementById('roulette-tab').classList.remove('active');
-            document.getElementById('profile-tab').classList.remove('active');
             showAuthModal();
         });
 
-        // Колесо рулетки
-        function updateWheel() {
-            if (words.length === 0) {
-                wheel.style.background = 'none';
-                wheel.innerHTML = '';
-                return;
-            }
-            let gradient = '';
-            const segmentAngle = 360 / words.length;
-            for (let i = 0; i < words.length; i++) {
-                const startAngle = i * segmentAngle;
-                const endAngle = startAngle + segmentAngle;
-                const color = `hsl(${(i / words.length) * 360}, 100%, 50%)`;
-                gradient += `${color} ${startAngle}deg, ${color} ${endAngle}deg, `;
-            }
-            gradient = gradient.trim().slice(0, -1);
-            wheel.style.background = `conic-gradient(${gradient})`;
-            for (let i = 0; i < words.length; i++) {
-                const segment = document.createElement('div');
-                segment.className = 'segment';
-                segment.style.transform = `rotate(${(i * segmentAngle) + (segmentAngle / 2)}deg) translate(150px) rotate(${-((i * segmentAngle) + (segmentAngle / 2))}deg)`;
-                segment.innerText = words[i];
-                wheel.appendChild(segment);
-            }
+        function initializeProfile() {
+            profileHeader.innerText = `Профиль пользователя ${storedLogin}`;
+            profileSection.style.display = 'block';
+            profilePhoto.addEventListener('click', () => {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.onchange = () => {
+                    const file = fileInput.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const img = new Image();
+                            img.src = e.target.result;
+                            profilePhoto.innerHTML = '';
+                            profilePhoto.appendChild(img);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                };
+                fileInput.click();
+            });
         }
 
-        addWordButton.addEventListener('click', () => {
-            const word = wordInput.value.trim();
-            if (word && !words.includes(word)) {
-                words.push(word);
-                wordInput.value = '';
-                const wordItem = document.createElement('div');
-                wordItem.className = 'word-item';
-                wordItem.innerHTML = `${word} <button class="delete-word-button">Удалить</button>`;
-                wordsList.appendChild(wordItem);
-                updateWheel();
-            } else if (word) {
-                alert('Это слово уже добавлено!');
-            }
+        document.getElementById('roulette-tab').addEventListener('click', () => {
+            // Пока что ничего не делаем, позже добавим функционал рулетки
+            alert('Функционал рулетки будет добавлен позже.');
         });
 
-        // Обработка удаления слов
-        wordsList.addEventListener('click', (event) => {
-            if (event.target.classList.contains('delete-word-button')) {
-                const wordItem = event.target.parentElement;
-                const word = wordItem.innerText.split(' ')[0];
-                words = words.filter(w => w !== word);
-                wordItem.remove();
-                updateWheel();
-            }
+        document.getElementById('profile-tab').addEventListener('click', () => {
+            document.getElementById('profile-section').style.display = 'block';
         });
-
-        spinButton.addEventListener('click', () => {
-            if (words.length === 0) {
-                alert('Пожалуйста, добавьте хотя бы одно слово.');
-                return;
-            }
-            const randomDegree = Math.floor(Math.random() * 360) + 3600;
-            angle += randomDegree;
-            wheel.classList.add('spinning');
-            setTimeout(() => {
-                wheel.style.transform = `rotate(${angle}deg)`;
-                const resultIndex = ((angle % 360) / (360 / words.length)) | 0;
-                alert(`Вы попали на: ${words[resultIndex]}`);
-                wheel.classList.remove('spinning');
-                spinsCount++;
-                document.getElementById('spins-count').innerText = spinsCount;
-            }, 5000);
-        });
-
-        // Назначаем обработчики событий
-        document.getElementById('loginButton').addEventListener('click', handleLogin);
-        document.getElementById('registerButton').addEventListener('click', handleRegister);
     </script>
 </body>
 </html>
