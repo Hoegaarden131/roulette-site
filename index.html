@@ -218,6 +218,7 @@
         </div>
         <div id="search-users">
             <input type="text" id="search-input" placeholder="Поиск по логинам">
+            <button id="search-button">Поиск</button>
             <div id="user-profile"></div>
         </div>
     </div>
@@ -463,15 +464,31 @@
         document.getElementById('roulette-tab').addEventListener('click', () => {
             document.getElementById('profile-section').style.display = 'none';
             document.getElementById('wheel-container').style.display = 'block';
+            document.getElementById('admin-controls').style.display = isAdmin ? 'block' : 'none';
+            document.getElementById('spinButton').style.display = 'inline-block';
             document.getElementById('roulette-tab').classList.add('active');
             document.getElementById('profile-tab').classList.remove('active');
         });
 
         document.getElementById('profile-tab').addEventListener('click', () => {
             document.getElementById('wheel-container').style.display = 'none';
+            document.getElementById('admin-controls').style.display = 'none';
+            document.getElementById('spinButton').style.display = 'none';
             document.getElementById('profile-section').style.display = 'block';
             document.getElementById('profile-tab').classList.add('active');
             document.getElementById('roulette-tab').classList.remove('active');
+        });
+
+        document.getElementById('search-button').addEventListener('click', () => {
+            const searchInput = document.getElementById('search-input').value.trim();
+            if (searchInput) {
+                // Здесь можно добавить код для поиска пользователя по логину
+                console.log(`Searching for user with login: ${searchInput}`);
+                // Пример: показать профиль найденного пользователя
+                document.getElementById('user-profile').innerText = `Профиль пользователя ${searchInput}`;
+            } else {
+                alert('Введите логин для поиска.');
+            }
         });
 
         function initializeProfile() {
