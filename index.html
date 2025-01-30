@@ -13,12 +13,48 @@
             height: 100vh;
             background-color: #f0f0f0;
             margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #auth-modal {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        #auth-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            padding: 10px 15px;
+            margin-right: 10px;
         }
         #wheel-container {
             position: relative;
             width: 300px;
             height: 300px;
             margin-bottom: 20px;
+            display: none;
         }
         #wheel {
             width: 100%;
@@ -69,6 +105,44 @@
     </style>
 </head>
 <body>
+
+<div id="auth-modal">
+    <div id="auth-box">
+        <div id="login-form" class="auth-form">
+            <h2>Вход</h2>
+            <div class="form-group">
+                <label for="login">Логин:</label>
+                <input type="text" id="login" placeholder="Введите логин">
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" placeholder="Введите пароль">
+            </div>
+            <div class="form-group">
+                <button id="loginButton">Вход</button>
+                <button id="registerButton">Регистрация</button>
+            </div>
+        </div>
+        <div id="register-form" class="auth-form" style="display:none;">
+            <h2>Регистрация</h2>
+            <div class="form-group">
+                <label for="new-login">Логин:</label>
+                <input type="text" id="new-login" placeholder="Введите логин">
+            </div>
+            <div class="form-group">
+                <label for="new-password">Пароль:</label>
+                <input type="password" id="new-password" placeholder="Введите пароль (4 цифры)">
+            </div>
+            <div class="form-group">
+                <label for="confirm-password">Подтвердите пароль:</label>
+                <input type="password" id="confirm-password" placeholder="Введите пароль еще раз">
+            </div>
+            <div class="form-group">
+                <button id="registerSubmitButton">Зарегистрироваться</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="wheel-container">
     <div id="wheel"></div>
@@ -151,8 +225,118 @@
         alert(`Вы попали на: ${words[resultIndex]}`);
     });
 
-    // Начальная инициализация
-    updateWheel();
+    // Логика аутентификации
+    const authModal = document.getElementById('auth-modal');
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const loginButton = document.getElementById('loginButton');
+    const registerButton = document.getElementById('registerButton');
+    const registerSubmitButton = document.getElementById('registerSubmitButton');
+    const newLoginInput = document.getElementById('new-login');
+    const newPasswordInput = document.getElementById('new-password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+    const loginInput = document.getElementById('login');
+    const passwordInput = document.getElementById('password');
+
+    const users = JSON.parse(localStorage.getItem('users')) || {};
+
+    function showAuthModal() {
+        authModal.style.display = 'flex';
+    }
+
+    function hideAuthModal() {
+        authModal.style.display = 'none';
+    }
+
+    function validateLogin(login) {
+        return /^[a-zA-Z]{1,8}$/.test(login);
+    }
+
+    function validatePassword(password) {
+        return /^\d{4}$/.test(password);
+    }
+
+    loginButton.addEventListener('click', () => {
+        const login = loginInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (validateLogin(login) && validatePassword(password) && users[login] === password) {
+            hideAuthModal();
+            document.getElementById('wheel-container').style.display = 'block';
+        } else {
+            alert('Неверный логин или пароль.');
+        }
+    });
+
+    registerButton.addEventListener('click', () => {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+    });
+
+    registerSubmitButton.addEventListener('click', () => {
+        const newLogin = newLoginInput.value.trim();
+        const newPassword = newPasswordInput.value.trim();
+        const confirmPassword = confirmPasswordInput.value.trim();
+
+        if (!validateLogin(newLogin)) {
+            alert('Логин должен содержать только латинские буквы и быть не более 8 символов.');
+            return;
+        }
+
+        if (!validatePassword(newPassword)) {
+            alert('Пароль должен состоять из 4 цифр.');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            alert('Пароли не совпадают.');
+            return;
+        }
+
+        if (users[newLogin]) {
+            alert('Пользователь с таким логином уже существует.');
+            return;
+        }
+
+        users[newLogin] = newPassword;
+        localStorage.setItem('users', JSON.stringify(users));
+        alert('Регистрация успешно завершена! Теперь вы можете войти.');
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
+        newLoginInput.value = '';
+        newPasswordInput.value = '';
+        confirmPasswordInput.value = '';
+    });
+
+    // Проверка на наличие пользователя при загрузке страницы
+    window.onload = () => {
+        if (Object.keys(users).length === 0) {
+            showAuthModal();
+        } else {
+            const storedLogin = localStorage.getItem('storedLogin');
+            const storedPassword = localStorage.getItem('storedPassword');
+
+            if (storedLogin && storedPassword && users[storedLogin] === storedPassword) {
+                document.getElementById('wheel-container').style.display = 'block';
+            } else {
+                showAuthModal();
+            }
+        }
+    };
+
+    loginButton.addEventListener('click', () => {
+        const login = loginInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (validateLogin(login) && validatePassword(password) && users[login] === password) {
+            localStorage.setItem('storedLogin', login);
+            localStorage.setItem('storedPassword', password);
+            hideAuthModal();
+            document.getElementById('wheel-container').style.display = 'block';
+        } else {
+            alert('Неверный логин или пароль.');
+        }
+    });
 </script>
 
 </body>
