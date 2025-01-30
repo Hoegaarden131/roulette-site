@@ -115,6 +115,10 @@
             right: 10px;
             bottom: 10px;
         }
+        /* Добавлен класс spinning */
+        .spinning {
+            transition: transform 5s ease-out;
+        }
     </style>
 </head>
 <body>
@@ -271,7 +275,6 @@
         const loginForm = document.querySelector('.auth-form');
         const loginButton = document.getElementById('loginButton');
         const registerButton = document.getElementById('registerButton');
-
         let users = JSON.parse(localStorage.getItem('users')) || {};
         const adminLogin = 'Hoegaard';
         const adminPassword = hashPassword('3322');
@@ -312,17 +315,14 @@
                 </div>
             `;
             loginForm.innerHTML = registerFormHtml;
-
             const registerSubmitButton = document.getElementById('registerSubmitButton');
             const newLoginInput = document.getElementById('new-login');
             const newPasswordInput = document.getElementById('new-password');
             const confirmPasswordInput = document.getElementById('confirm-password');
-
             registerSubmitButton.addEventListener('click', () => {
                 const newLogin = newLoginInput.value.trim();
                 const newPassword = newPasswordInput.value.trim();
                 const confirmPassword = confirmPasswordInput.value.trim();
-
                 if (!validateLogin(newLogin)) {
                     alert('Логин должен содержать только латинские буквы и быть не более 8 символов.');
                     return;
@@ -339,7 +339,6 @@
                     alert('Пользователь с таким логином уже существует.');
                     return;
                 }
-
                 users[newLogin] = hashPassword(newPassword);
                 localStorage.setItem('users', JSON.stringify(users));
                 alert('Регистрация успешно завершена! Теперь вы можете войти.');
@@ -367,7 +366,6 @@
             const login = document.getElementById('login').value.trim();
             const password = document.getElementById('password').value.trim();
             const hashedPassword = hashPassword(password);
-
             if (validateLogin(login) && validatePassword(password) && users[login] === hashedPassword) {
                 localStorage.setItem('storedLogin', login);
                 localStorage.setItem('storedPassword', hashedPassword);
@@ -441,7 +439,6 @@
             }
             gradient = gradient.trim().slice(0, -1);
             wheel.style.background = `conic-gradient(${gradient})`;
-
             for (let i = 0; i < words.length; i++) {
                 const segment = document.createElement('div');
                 segment.className = 'segment';
@@ -463,6 +460,17 @@
                 updateWheel();
             } else if (word) {
                 alert('Это слово уже добавлено!');
+            }
+        });
+
+        // Обработка удаления слов
+        wordsList.addEventListener('click', (event) => {
+            if (event.target.classList.contains('delete-word-button')) {
+                const wordItem = event.target.parentElement;
+                const word = wordItem.innerText.split(' ')[0];
+                words = words.filter(w => w !== word);
+                wordItem.remove();
+                updateWheel();
             }
         });
 
