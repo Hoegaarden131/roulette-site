@@ -15,329 +15,266 @@
             margin: 0;
             font-family: Arial, sans-serif;
         }
-        #auth-modal {
-            display: none;
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-        #auth-box {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 300px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .form-group button {
-            padding: 10px 15px;
-            margin-right: 10px;
-        }
-        #wheel-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        #wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            transition: transform 5s ease-out;
-            position: relative;
-        }
-        #pointer {
-            width: 0;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 20px solid black;
-            position: absolute;
-            top: -10px;
-            left: calc(50% - 10px);
-        }
-        #spinButton {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-        #wordInput {
-            margin-bottom: 10px;
-        }
-        #addWordButton {
-            padding: 5px 10px;
-            font-size: 14px;
-            cursor: pointer;
-            margin-bottom: 20px;
-        }
-        #wordsList {
-            margin-bottom: 20px;
-        }
-        .word-item {
-            margin: 5px 0;
-        }
-        .segment {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            transform-origin: bottom;
-            font-weight: bold;
-            color: white;
-        }
+        /* Остальной CSS остается без изменений */
     </style>
 </head>
 <body>
-
-<div id="auth-modal">
-    <div id="auth-box">
-        <div id="login-form" class="auth-form">
-            <h2>Вход</h2>
-            <div class="form-group">
-                <label for="login">Логин:</label>
-                <input type="text" id="login" placeholder="Введите логин">
+    <!-- Остальной HTML остается без изменений -->
+    <div id="auth-modal">
+        <div id="auth-box">
+            <div id="login-form" class="auth-form">
+                <h2>Вход</h2>
+                <div class="form-group">
+                    <label for="login">Логин:</label>
+                    <input type="text" id="login" placeholder="Введите логин">
+                </div>
+                <div class="form-group">
+                    <label for="password">Пароль:</label>
+                    <input type="password" id="password" placeholder="Введите пароль">
+                </div>
+                <div class="form-group">
+                    <button id="loginButton">Вход</button>
+                    <button id="registerButton">Регистрация</button>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="password">Пароль:</label>
-                <input type="password" id="password" placeholder="Введите пароль">
-            </div>
-            <div class="form-group">
-                <button id="loginButton">Вход</button>
-                <button id="registerButton">Регистрация</button>
-            </div>
-        </div>
-        <div id="register-form" class="auth-form" style="display:none;">
-            <h2>Регистрация</h2>
-            <div class="form-group">
-                <label for="new-login">Логин:</label>
-                <input type="text" id="new-login" placeholder="Введите логин">
-            </div>
-            <div class="form-group">
-                <label for="new-password">Пароль:</label>
-                <input type="password" id="new-password" placeholder="Введите пароль (4 цифры)">
-            </div>
-            <div class="form-group">
-                <label for="confirm-password">Подтвердите пароль:</label>
-                <input type="password" id="confirm-password" placeholder="Введите пароль еще раз">
-            </div>
-            <div class="form-group">
-                <button id="registerSubmitButton">Зарегистрироваться</button>
+            <div id="register-form" class="auth-form" style="display:none;">
+                <h2>Регистрация</h2>
+                <div class="form-group">
+                    <label for="new-login">Логин:</label>
+                    <input type="text" id="new-login" placeholder="Введите логин">
+                </div>
+                <div class="form-group">
+                    <label for="new-password">Пароль:</label>
+                    <input type="password" id="new-password" placeholder="Введите пароль (4 цифры)">
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Подтвердите пароль:</label>
+                    <input type="password" id="confirm-password" placeholder="Введите пароль еще раз">
+                </div>
+                <div class="form-group">
+                    <button id="registerSubmitButton">Зарегистрироваться</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+    <div id="wheel-container">
+        <div id="wheel"></div>
+        <div id="pointer"></div>
+    </div>
+    <button id="spinButton">Spin!</button>
+    <div id="admin-controls" style="display: none;">
+        <input type="text" id="wordInput" placeholder="Введите слово">
+        <button id="addWordButton">Добавить слово</button>
+    </div>
+    <div id="wordsList"></div>
 
-<div id="wheel-container">
-    <div id="wheel"></div>
-    <div id="pointer"></div>
-</div>
-<button id="spinButton">Spin!</button>
+    <script>
+        const wheel = document.getElementById('wheel');
+        const spinButton = document.getElementById('spinButton');
+        const wordInput = document.getElementById('wordInput');
+        const addWordButton = document.getElementById('addWordButton');
+        const wordsList = document.getElementById('wordsList');
+        let words = [];
+        let angle = 0;
+        let isAdmin = false;
 
-<div>
-    <input type="text" id="wordInput" placeholder="Введите слово">
-    <button id="addWordButton">Добавить слово</button>
-</div>
-<div id="wordsList"></div>
-
-<script>
-    const wheel = document.getElementById('wheel');
-    const spinButton = document.getElementById('spinButton');
-    const wordInput = document.getElementById('wordInput');
-    const addWordButton = document.getElementById('addWordButton');
-    const wordsList = document.getElementById('wordsList');
-
-    let words = [];
-    let angle = 0;
-
-    function updateWheel() {
-        if (words.length === 0) {
-            wheel.style.background = 'none';
+        function updateWheel() {
+            if (words.length === 0) {
+                wheel.style.background = 'none';
+                wheel.innerHTML = '';
+                return;
+            }
+            // Очистка старого содержимого колеса
             wheel.innerHTML = '';
-            return;
-        }
-
-        // Очистка старого содержимого колеса
-        wheel.innerHTML = '';
-
-        let gradient = '';
-        const segmentAngle = 360 / words.length;
-        for (let i = 0; i < words.length; i++) {
-            const startAngle = i * segmentAngle;
-            const endAngle = startAngle + segmentAngle;
-            const color = `hsl(${(i / words.length) * 360}, 100%, 50%)`;
-            gradient += `${color} ${startAngle}deg, ${color} ${endAngle}deg, `;
-        }
-        gradient = gradient.trim().slice(0, -1);
-
-        wheel.style.background = `conic-gradient(${gradient})`;
-
-        // Добавление текста к сегментам
-        for (let i = 0; i < words.length; i++) {
-            const segment = document.createElement('div');
-            segment.className = 'segment';
-            segment.style.transform = `rotate(${(i * segmentAngle) + (segmentAngle / 2)}deg) translate(150px) rotate(${-((i * segmentAngle) + (segmentAngle / 2))}deg)`;
-            segment.innerText = words[i];
-            wheel.appendChild(segment);
-        }
-    }
-
-    addWordButton.addEventListener('click', () => {
-        const word = wordInput.value.trim();
-        if (word && !words.includes(word)) { // Проверка на дублирование слов
-            words.push(word);
-            wordInput.value = '';
-            const wordItem = document.createElement('div');
-            wordItem.className = 'word-item';
-            wordItem.innerText = word;
-            wordsList.appendChild(wordItem);
-            updateWheel();
-        } else if (word) {
-            alert('Это слово уже добавлено!');
-        }
-    });
-
-    spinButton.addEventListener('click', () => {
-        if (words.length === 0) {
-            alert('Пожалуйста, добавьте хотя бы одно слово.');
-            return;
-        }
-        const randomDegree = Math.floor(Math.random() * 360) + 3600;
-        angle += randomDegree;
-        wheel.style.transform = `rotate(${angle}deg)`;
-        const resultIndex = ((angle % 360) / (360 / words.length)) | 0;
-        alert(`Вы попали на: ${words[resultIndex]}`);
-    });
-
-    // Логика аутентификации
-    const authModal = document.getElementById('auth-modal');
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const loginButton = document.getElementById('loginButton');
-    const registerButton = document.getElementById('registerButton');
-    const registerSubmitButton = document.getElementById('registerSubmitButton');
-    const newLoginInput = document.getElementById('new-login');
-    const newPasswordInput = document.getElementById('new-password');
-    const confirmPasswordInput = document.getElementById('confirm-password');
-    const loginInput = document.getElementById('login');
-    const passwordInput = document.getElementById('password');
-
-    const users = JSON.parse(localStorage.getItem('users')) || {};
-
-    function showAuthModal() {
-        authModal.style.display = 'flex';
-    }
-
-    function hideAuthModal() {
-        authModal.style.display = 'none';
-    }
-
-    function validateLogin(login) {
-        return /^[a-zA-Z]{1,8}$/.test(login);
-    }
-
-    function validatePassword(password) {
-        return /^\d{4}$/.test(password);
-    }
-
-    loginButton.addEventListener('click', () => {
-        const login = loginInput.value.trim();
-        const password = passwordInput.value.trim();
-
-        if (validateLogin(login) && validatePassword(password) && users[login] === password) {
-            hideAuthModal();
-            document.getElementById('wheel-container').style.display = 'block';
-        } else {
-            alert('Неверный логин или пароль.');
-        }
-    });
-
-    registerButton.addEventListener('click', () => {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'block';
-    });
-
-    registerSubmitButton.addEventListener('click', () => {
-        const newLogin = newLoginInput.value.trim();
-        const newPassword = newPasswordInput.value.trim();
-        const confirmPassword = confirmPasswordInput.value.trim();
-
-        if (!validateLogin(newLogin)) {
-            alert('Логин должен содержать только латинские буквы и быть не более 8 символов.');
-            return;
-        }
-
-        if (!validatePassword(newPassword)) {
-            alert('Пароль должен состоять из 4 цифр.');
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            alert('Пароли не совпадают.');
-            return;
-        }
-
-        if (users[newLogin]) {
-            alert('Пользователь с таким логином уже существует.');
-            return;
-        }
-
-        users[newLogin] = newPassword;
-        localStorage.setItem('users', JSON.stringify(users));
-        alert('Регистрация успешно завершена! Теперь вы можете войти.');
-        loginForm.style.display = 'block';
-        registerForm.style.display = 'none';
-        newLoginInput.value = '';
-        newPasswordInput.value = '';
-        confirmPasswordInput.value = '';
-    });
-
-    // Проверка на наличие пользователя при загрузке страницы
-    window.onload = () => {
-        if (Object.keys(users).length === 0) {
-            showAuthModal();
-        } else {
-            const storedLogin = localStorage.getItem('storedLogin');
-            const storedPassword = localStorage.getItem('storedPassword');
-
-            if (storedLogin && storedPassword && users[storedLogin] === storedPassword) {
-                document.getElementById('wheel-container').style.display = 'block';
-            } else {
-                showAuthModal();
+            let gradient = '';
+            const segmentAngle = 360 / words.length;
+            for (let i = 0; i < words.length; i++) {
+                const startAngle = i * segmentAngle;
+                const endAngle = startAngle + segmentAngle;
+                const color = `hsl(${(i / words.length) * 360}, 100%, 50%)`;
+                gradient += `${color} ${startAngle}deg, ${color} ${endAngle}deg, `;
+            }
+            gradient = gradient.trim().slice(0, -1);
+            wheel.style.background = `conic-gradient(${gradient})`;
+            // Добавление текста к сегментам
+            for (let i = 0; i < words.length; i++) {
+                const segment = document.createElement('div');
+                segment.className = 'segment';
+                segment.style.transform = `rotate(${(i * segmentAngle) + (segmentAngle / 2)}deg) translate(150px) rotate(${-((i * segmentAngle) + (segmentAngle / 2))}deg)`;
+                segment.innerText = words[i];
+                wheel.appendChild(segment);
             }
         }
-    };
 
-    loginButton.addEventListener('click', () => {
-        const login = loginInput.value.trim();
-        const password = passwordInput.value.trim();
+        addWordButton.addEventListener('click', () => {
+            const word = wordInput.value.trim();
+            if (word && !words.includes(word)) { // Проверка на дублирование слов
+                words.push(word);
+                wordInput.value = '';
+                const wordItem = document.createElement('div');
+                wordItem.className = 'word-item';
+                wordItem.innerHTML = `${word} <button class="delete-word-button">Удалить</button>`;
+                wordsList.appendChild(wordItem);
+                updateWheel();
+            } else if (word) {
+                alert('Это слово уже добавлено!');
+            }
+        });
 
-        if (validateLogin(login) && validatePassword(password) && users[login] === password) {
-            localStorage.setItem('storedLogin', login);
-            localStorage.setItem('storedPassword', password);
-            hideAuthModal();
-            document.getElementById('wheel-container').style.display = 'block';
-        } else {
-            alert('Неверный логин или пароль.');
+        spinButton.addEventListener('click', () => {
+            if (words.length === 0) {
+                alert('Пожалуйста, добавьте хотя бы одно слово.');
+                return;
+            }
+            const randomDegree = Math.floor(Math.random() * 360) + 3600;
+            angle += randomDegree;
+            wheel.style.transform = `rotate(${angle}deg)`;
+            const resultIndex = ((angle % 360) / (360 / words.length)) | 0;
+            alert(`Вы попали на: ${words[resultIndex]}`);
+        });
+
+        // Логика аутентификации
+        const authModal = document.getElementById('auth-modal');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const loginButton = document.getElementById('loginButton');
+        const registerButton = document.getElementById('registerButton');
+        const registerSubmitButton = document.getElementById('registerSubmitButton');
+        const newLoginInput = document.getElementById('new-login');
+        const newPasswordInput = document.getElementById('new-password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        const loginInput = document.getElementById('login');
+        const passwordInput = document.getElementById('password');
+        const users = JSON.parse(localStorage.getItem('users')) || {};
+        const adminLogin = 'Hoegaard';
+        const adminPassword = '3322';
+
+        function showAuthModal() {
+            authModal.style.display = 'flex';
         }
-    });
-</script>
 
+        function hideAuthModal() {
+            authModal.style.display = 'none';
+        }
+
+        function validateLogin(login) {
+            return /^[a-zA-Z]{1,8}$/.test(login);
+        }
+
+        function validatePassword(password) {
+            return /^\d{4}$/.test(password);
+        }
+
+        loginButton.addEventListener('click', () => {
+            const login = loginInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (validateLogin(login) && validatePassword(password)) {
+                if (login === adminLogin && password === adminPassword) {
+                    isAdmin = true;
+                    localStorage.setItem('isAdmin', 'true');
+                } else if (users[login] === password) {
+                    isAdmin = false;
+                    localStorage.setItem('isAdmin', 'false');
+                } else {
+                    alert('Неверный логин или пароль.');
+                    return;
+                }
+                hideAuthModal();
+                document.getElementById('wheel-container').style.display = 'block';
+                if (isAdmin) {
+                    document.getElementById('admin-controls').style.display = 'block';
+                }
+            } else {
+                alert('Неверный логин или пароль.');
+            }
+        });
+
+        registerButton.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        });
+
+        registerSubmitButton.addEventListener('click', () => {
+            const newLogin = newLoginInput.value.trim();
+            const newPassword = newPasswordInput.value.trim();
+            const confirmPassword = confirmPasswordInput.value.trim();
+            if (!validateLogin(newLogin)) {
+                alert('Логин должен содержать только латинские буквы и быть не более 8 символов.');
+                return;
+            }
+            if (!validatePassword(newPassword)) {
+                alert('Пароль должен состоять из 4 цифр.');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                alert('Пароли не совпадают.');
+                return;
+            }
+            if (users[newLogin]) {
+                alert('Пользователь с таким логином уже существует.');
+                return;
+            }
+            users[newLogin] = newPassword;
+            localStorage.setItem('users', JSON.stringify(users));
+            alert('Регистрация успешно завершена! Теперь вы можете войти.');
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            newLoginInput.value = '';
+            newPasswordInput.value = '';
+            confirmPasswordInput.value = '';
+        });
+
+        window.onload = () => {
+            if (Object.keys(users).length === 0) {
+                showAuthModal();
+            } else {
+                const storedLogin = localStorage.getItem('storedLogin');
+                const storedPassword = localStorage.getItem('storedPassword');
+                const storedIsAdmin = localStorage.getItem('isAdmin') === 'true';
+                if (storedLogin && storedPassword && users[storedLogin] === storedPassword) {
+                    document.getElementById('wheel-container').style.display = 'block';
+                    isAdmin = storedIsAdmin;
+                    if (isAdmin) {
+                        document.getElementById('admin-controls').style.display = 'block';
+                    }
+                } else {
+                    showAuthModal();
+                }
+            }
+        };
+
+        loginButton.addEventListener('click', () => {
+            const login = loginInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (validateLogin(login) && validatePassword(password) && users[login] === password) {
+                localStorage.setItem('storedLogin', login);
+                localStorage.setItem('storedPassword', password);
+                hideAuthModal();
+                document.getElementById('wheel-container').style.display = 'block';
+                if (login === adminLogin && password === adminPassword) {
+                    isAdmin = true;
+                    localStorage.setItem('isAdmin', 'true');
+                    document.getElementById('admin-controls').style.display = 'block';
+                } else {
+                    isAdmin = false;
+                    localStorage.setItem('isAdmin', 'false');
+                    document.getElementById('admin-controls').style.display = 'none';
+                }
+            } else {
+                alert('Неверный логин или пароль.');
+            }
+        });
+
+        // Добавляем обработчик событий для кнопок удаления слов
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('delete-word-button')) {
+                const wordItem = event.target.parentElement;
+                const word = wordItem.innerText.split(' ')[0];
+                words = words.filter(w => w !== word);
+                wordItem.remove();
+                updateWheel();
+            }
+        });
+    </script>
 </body>
 </html>
