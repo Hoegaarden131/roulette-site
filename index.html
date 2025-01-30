@@ -5,117 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Мессенджер</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        nav {
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            background-color: #ccc;
-            padding: 10px 0;
-            display: none; /* Скрыто до авторизации */
-        }
-        .nav-item {
-            cursor: pointer;
-            font-size: 24px;
-        }
-        @media (max-width: 768px) {
-            nav {
-                flex-direction: column;
-            }
-            .nav-item {
-                margin: 10px 0;
-            }
-        }
-        #auth-modal {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        #auth-box {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 300px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 16px;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-        .form-group button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-        #profile-section {
-            display: none;
-            padding: 20px;
-            text-align: center;
-        }
-        #profile-header {
-            font-size: 24px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        #profile-photo {
-            width: 150px;
-            height: 150px;
-            border: 2px dashed #ccc;
-            margin: 20px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-        }
-        #profile-photo img {
-            max-width: 100%;
-            max-height: 100%;
-        }
-        #chat-section {
-            display: none;
-            padding: 20px;
-        }
-        #chat-messages {
-            border: 1px solid #ccc;
-            padding: 10px;
-            height: 300px;
-            overflow-y: auto;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f0f0f0; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        nav { width: 100%; display: flex; justify-content: space-around; background-color: #ccc; padding: 10px 0; display: none; }
+        .nav-item { cursor: pointer; font-size: 24px; }
+        @media (max-width: 768px) { nav { flex-direction: column; } .nav-item { margin: 10px 0; } }
+        #auth-modal, #user-profile-modal { position: fixed; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; }
+        #auth-box, #user-profile-box { background-color: white; padding: 20px; border-radius: 10px; width: 300px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 16px; }
+        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; }
+        .form-group button { padding: 10px 20px; font-size: 16px; cursor: pointer; margin-right: 10px; }
+        #profile-section { display: none; padding: 20px; text-align: center; }
+        #profile-header { font-size: 24px; font-weight: bold; margin-bottom: 20px; }
+        #profile-photo { width: 150px; height: 150px; border: 2px dashed #ccc; margin: 20px auto; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        #profile-photo img { max-width: 100%; max-height: 100%; }
+        #chat-section { display: none; padding: 20px; }
+        #chat-messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; }
+        #menu { position: fixed; top: 10px; right: 10px; }
+        #menu-button { background: none; border: none; cursor: pointer; }
+        #menu-button img { width: 30px; }
+        #wheel-container { position: relative; width: 300px; height: 300px; margin-bottom: 20px; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; transition: transform 5s ease-out; position: relative; }
+        #pointer { width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 30px solid black; position: absolute; top: -15px; left: calc(50% - 15px); }
+        #spinButton { padding: 15px 30px; font-size: 24px; cursor: pointer; margin-bottom: 30px; }
+        .spinning { transition: transform 5s ease-out; }
     </style>
 </head>
 <body>
     <nav id="nav">
         <div class="nav-item" id="roulette-tab">Рулетка</div>
         <div class="nav-item" id="profile-tab">Профиль</div>
+        <div class="nav-item" id="chats-tab">Чаты</div>
     </nav>
 
-    <!-- Модальное окно авторизации -->
+    <div id="menu">
+        <button id="menu-button"><img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'><path d='M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z'/></svg>" alt="Menu"></button>
+    </div>
+
     <div id="auth-modal">
         <div id="auth-box">
             <div class="auth-form">
@@ -136,7 +62,6 @@
         </div>
     </div>
 
-    <!-- Модальное окно регистрации -->
     <div id="register-modal" style="display: none;">
         <div id="register-box">
             <div class="auth-form">
@@ -160,7 +85,6 @@
         </div>
     </div>
 
-    <!-- Профиль пользователя -->
     <div id="profile-section">
         <div id="profile-header"></div>
         <div id="profile-photo">Нажмите, чтобы загрузить фото</div>
@@ -169,6 +93,9 @@
             <input type="text" id="search-users" placeholder="Введите ник">
             <button id="search-users-button">Найти</button>
         </div>
+    </div>
+
+    <div id="settings-section" style="display: none;">
         <div class="form-group">
             <label for="update-login">Изменить ник:</label>
             <input type="text" id="update-login" placeholder="Введите новый ник">
@@ -181,137 +108,98 @@
         </div>
     </div>
 
-    <!-- Чат -->
-    <div id="chat-section">
+    <div id="roulette-section" style="display: none;">
+        <div id="wheel-container">
+            <div id="wheel"></div>
+            <div id="pointer"></div>
+        </div>
+        <div id="admin-controls" style="display: none;">
+            <input type="text" id="wordInput" placeholder="Введите слово">
+            <button id="addWordButton">Добавить слово</button>
+        </div>
+        <div id="wordsList"></div>
+        <button id="spinButton">Spin!</button>
+    </div>
+
+    <div id="chat-section" style="display: none;">
         <div id="chat-messages"></div>
         <input type="text" id="message-input" placeholder="Введите сообщение">
         <button id="send-message-button">Отправить</button>
+    </div>
+
+    <div id="chats-section" style="display: none;">
+        <div id="active-chats"></div>
+    </div>
+
+    <div id="user-profile-modal" style="display: none;">
+        <div id="user-profile-box">
+            <div id="user-profile-photo">Фото профиля</div>
+            <div id="user-profile-nickname"></div>
+            <button id="send-message-to-user">Отправить сообщение</button>
+        </div>
     </div>
 
     <script>
         const users = JSON.parse(localStorage.getItem('users')) || {};
         const authModal = document.getElementById('auth-modal');
         const registerModal = document.getElementById('register-modal');
-        const loginForm = document.querySelector('.auth-form');
         const loginButton = document.getElementById('loginButton');
         const registerButton = document.getElementById('registerButton');
         const registerSubmitButton = document.getElementById('registerSubmitButton');
-        const newLoginInput = document.getElementById('new-login');
-        const newPasswordInput = document.getElementById('new-password');
-        const confirmPasswordInput = document.getElementById('confirm-password');
         const profileSection = document.getElementById('profile-section');
         const profileHeader = document.getElementById('profile-header');
         const profilePhoto = document.getElementById('profile-photo');
         let storedLogin;
 
         function hashPassword(password) {
-            return new Promise((resolve, reject) => {
-                const encoder = new TextEncoder();
-                crypto.subtle.digest('SHA-256', encoder.encode(password))
-                    .then(hashBuffer => {
-                        const hashArray = Array.from(new Uint8Array(hashBuffer));
-                        const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
-                        resolve(hashHex);
-                    })
-                    .catch(error => reject(error));
+            return crypto.subtle.digest('SHA-256', new TextEncoder().encode(password)).then(hashBuffer => {
+                return Array.from(new Uint8Array(hashBuffer)).map(byte => byte.toString(16).padStart(2, '0')).join('');
             });
         }
 
-        function validateLogin(login) {
-            return /^[a-zA-Z0-9]{1,12}$/.test(login);
-        }
+        function validateLogin(login) { return /^[a-zA-Z0-9]{1,12}$/.test(login); }
+        function validatePassword(password) { return /^\d{4,8}$/.test(password); }
 
-        function validatePassword(password) {
-            return /^\d{4,8}$/.test(password);
-        }
+        function showAuthModal() { authModal.style.display = 'flex'; }
+        function hideAuthModal() { authModal.style.display = 'none'; }
+        function showRegisterModal() { registerModal.style.display = 'flex'; authModal.style.display = 'none'; }
+        function hideRegisterModal() { registerModal.style.display = 'none'; authModal.style.display = 'flex'; }
 
-        function showAuthModal() {
-            authModal.style.display = 'flex';
-        }
-
-        function hideAuthModal() {
-            authModal.style.display = 'none';
-        }
-
-        function showRegisterModal() {
-            registerModal.style.display = 'flex';
-            authModal.style.display = 'none';
-        }
-
-        function hideRegisterModal() {
-            registerModal.style.display = 'none';
-            authModal.style.display = 'flex';
-        }
-
-        registerButton.addEventListener('click', () => {
-            showRegisterModal();
-        });
+        registerButton.addEventListener('click', showRegisterModal);
 
         registerSubmitButton.addEventListener('click', async () => {
-            const newLogin = newLoginInput.value.trim();
-            const newPassword = newPasswordInput.value.trim();
-            const confirmPassword = confirmPasswordInput.value.trim();
-            if (!validateLogin(newLogin)) {
-                alert('Ник должен содержать только латинские буквы и цифры, не более 12 символов.');
+            const newLogin = document.getElementById('new-login').value.trim();
+            const newPassword = document.getElementById('new-password').value.trim();
+            const confirmPassword = document.getElementById('confirm-password').value.trim();
+            if (!validateLogin(newLogin) || !validatePassword(newPassword) || newPassword !== confirmPassword || users[newLogin]) {
+                alert('Ошибка регистрации.');
                 return;
             }
-            if (!validatePassword(newPassword)) {
-                alert('Пароль должен состоять из 4-8 арабских цифр.');
-                return;
-            }
-            if (newPassword !== confirmPassword) {
-                alert('Пароли не совпадают.');
-                return;
-            }
-            if (users[newLogin]) {
-                alert('Пользователь с таким ником уже существует.');
-                return;
-            }
-            const hashedPassword = await hashPassword(newPassword);
-            users[newLogin] = hashedPassword;
+            users[newLogin] = await hashPassword(newPassword);
             localStorage.setItem('users', JSON.stringify(users));
-            alert('Регистрация успешно завершена! Теперь вы можете войти.');
+            alert('Регистрация успешно завершена!');
             hideRegisterModal();
         });
 
         loginButton.addEventListener('click', async () => {
             const login = document.getElementById('login').value.trim();
             const password = document.getElementById('password').value.trim();
-            await validateLoginAndPassword(login, password);
-        });
-
-        async function validateLoginAndPassword(login, password) {
-            if (!validateLogin(login)) {
-                alert('Ник должен содержать только латинские буквы и цифры, не более 12 символов.');
-                return false;
-            }
-            if (!validatePassword(password)) {
-                alert('Пароль должен состоять из 4-8 арабских цифр.');
-                return false;
-            }
-
+            if (!validateLogin(login) || !validatePassword(password)) { alert('Неверный ник или пароль.'); return; }
             const hashedPassword = await hashPassword(password);
-
             if (users[login] === hashedPassword) {
                 localStorage.setItem('storedLogin', login);
                 hideAuthModal();
                 document.getElementById('nav').style.display = 'flex';
                 initializeProfile();
-                return true;
-            } else {
-                alert('Неверный ник или пароль.');
-                return false;
-            }
-        }
+            } else { alert('Неверный ник или пароль.'); }
+        });
 
         window.onload = () => {
             storedLogin = localStorage.getItem('storedLogin');
             if (storedLogin && users[storedLogin]) {
                 document.getElementById('nav').style.display = 'flex';
                 initializeProfile();
-            } else {
-                showAuthModal();
-            }
+            } else { showAuthModal(); }
         };
 
         document.getElementById('logoutButton').addEventListener('click', () => {
@@ -344,13 +232,23 @@
                 fileInput.click();
             });
 
-            document.getElementById('search-users-button').addEventListener('click', () => {
+            document.getElementById('search-users-button').addEventListener('click', async () => {
                 const searchQuery = document.getElementById('search-users').value.trim();
                 if (users[searchQuery]) {
-                    alert(`Пользователь ${searchQuery} найден.`);
-                } else {
-                    alert('Пользователь не найден.');
-                }
+                    const userProfileModal = document.getElementById('user-profile-modal');
+                    const userProfileBox = document.getElementById('user-profile-box');
+                    const userProfilePhoto = document.getElementById('user-profile-photo');
+                    const userProfileNickname = document.getElementById('user-profile-nickname');
+
+                    userProfilePhoto.innerHTML = `<img src="default-avatar.jpg" alt="Avatar" width="100" height="100">`;
+                    userProfileNickname.innerText = `Ник: ${searchQuery}`;
+                    userProfileModal.style.display = 'flex';
+
+                    document.getElementById('send-message-to-user').addEventListener('click', () => {
+                        userProfileModal.style.display = 'none';
+                        openChat(searchQuery);
+                    });
+                } else { alert('Пользователь не найден.'); }
             });
 
             document.getElementById('update-login-button').addEventListener('click', async () => {
@@ -363,71 +261,110 @@
                     localStorage.setItem('users', JSON.stringify(users));
                     alert('Ник успешно изменен.');
                     initializeProfile();
-                } else {
-                    alert('Некорректный ник.');
-                }
+                    document.getElementById('settings-section').style.display = 'none';
+                } else { alert('Некорректный ник.'); }
             });
 
             document.getElementById('update-password-button').addEventListener('click', async () => {
                 const updatePassword = document.getElementById('update-password').value.trim();
                 if (validatePassword(updatePassword)) {
-                    const hashedPassword = await hashPassword(updatePassword);
-                    users[storedLogin] = hashedPassword;
+                    users[storedLogin] = await hashPassword(updatePassword);
                     localStorage.setItem('users', JSON.stringify(users));
                     alert('Пароль успешно изменен.');
-                } else {
-                    alert('Некорректный пароль.');
-                }
+                    document.getElementById('settings-section').style.display = 'none';
+                } else { alert('Некорректный пароль.'); }
             });
         }
 
-        // Подключение к WebSocket серверу
+        document.getElementById('menu-button').addEventListener('click', () => { document.getElementById('settings-section').style.display = 'block'; });
+
         const socket = new WebSocket('ws://yourserver.com');
-
-        socket.onopen = () => {
-            console.log('Соединение установлено');
-        };
-
+        socket.onopen = () => { console.log('Соединение установлено'); };
         socket.onmessage = (event) => {
             const chatMessages = document.getElementById('chat-messages');
-            const messageElement = document.createElement('div');
-            messageElement.innerText = event.data;
-            chatMessages.appendChild(messageElement);
+            chatMessages.appendChild(document.createElement('div')).innerText = event.data;
             notify(`Новое сообщение: ${event.data}`);
         };
 
         function notify(message) {
-            if (!("Notification" in window)) {
-                alert("Этот браузер не поддерживает уведомления.");
-            } else if (Notification.permission === "granted") {
-                new Notification(message);
-            } else if (Notification.permission !== "denied") {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        new Notification(message);
-                    }
-                });
+            if (!("Notification" in window)) { alert("Этот браузер не поддерживает уведомления."); }
+            else if (Notification.permission === "granted") { new Notification(message); }
+            else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => { if (permission === "granted") { new Notification(message); } });
             }
         }
 
         document.getElementById('send-message-button').addEventListener('click', () => {
-            const messageInput = document.getElementById('message-input');
-            const message = messageInput.value.trim();
-            if (message) {
-                socket.send(message);
-                messageInput.value = '';
+            const message = document.getElementById('message-input').value.trim();
+            if (message) { socket.send(message); document.getElementById('message-input').value = ''; }
+        });
+
+        document.getElementById('profile-tab').addEventListener('click', () => { document.getElementById('profile-section').style.display = 'block'; document.getElementById('chat-section').style.display = 'none'; });
+        document.getElementById('roulette-tab').addEventListener('click', () => { document.getElementById('roulette-section').style.display = 'block'; document.getElementById('chat-section').style.display = 'none'; });
+        document.getElementById('chats-tab').addEventListener('click', () => {
+            document.getElementById('chats-section').style.display = 'block';
+            document.getElementById('chat-section').style.display = 'none';
+            document.getElementById('active-chats').innerHTML = Object.keys(chats).map(chatUser => `<div class="chat-user" onclick="openChat('${chatUser}')">${chatUser}</div>`).join('');
+        });
+
+        const wheel = document.getElementById('wheel');
+        const spinButton = document.getElementById('spinButton');
+        const wordInput = document.getElementById('wordInput');
+        const addWordButton = document.getElementById('addWordButton');
+        const wordsList = document.getElementById('wordsList');
+        let words = [], angle = 0;
+
+        function updateWheel() {
+            if (words.length === 0) { wheel.style.background = 'none'; wheel.innerHTML = ''; return; }
+            let gradient = '';
+            const segmentAngle = 360 / words.length;
+            for (let i = 0; i < words.length; i++) {
+                const startAngle = i * segmentAngle, endAngle = startAngle + segmentAngle;
+                gradient += `hsl(${(i / words.length) * 360}, 100%, 50%) ${startAngle}deg, hsl(${(i / words.length) * 360}, 100%, 50%) ${endAngle}deg, `;
+            }
+            wheel.style.background = `conic-gradient(${gradient.trim().slice(0, -1)})`;
+            wheel.innerHTML = '';
+            for (let i = 0; i < words.length; i++) {
+                const segment = document.createElement('div');
+                segment.className = 'segment';
+                segment.style.transform = `rotate(${(i * segmentAngle) + (segmentAngle / 2)}deg) translate(150px) rotate(${-((i * segmentAngle) + (segmentAngle / 2))}deg)`;
+                segment.innerText = words[i];
+                wheel.appendChild(segment);
+            }
+        }
+
+        addWordButton.addEventListener('click', () => {
+            const word = wordInput.value.trim();
+            if (word && !words.includes(word)) {
+                words.push(word);
+                wordInput.value = '';
+                wordsList.appendChild(Object.assign(document.createElement('div'), { className: 'word-item', innerHTML: `${word} <button class="delete-word-button">Удалить</button>` }));
+                updateWheel();
+            } else if (word) { alert('Это слово уже добавлено!'); }
+        });
+
+        wordsList.addEventListener('click', (event) => {
+            if (event.target.classList.contains('delete-word-button')) {
+                const wordItem = event.target.parentElement;
+                words = words.filter(w => w !== wordItem.innerText.split(' ')[0]);
+                wordItem.remove();
+                updateWheel();
             }
         });
 
-        document.getElementById('profile-tab').addEventListener('click', () => {
-            document.getElementById('profile-section').style.display = 'block';
-            document.getElementById('chat-section').style.display = 'none';
+        spinButton.addEventListener('click', () => {
+            if (words.length === 0) { alert('Пожалуйста, добавьте хотя бы одно слово.'); return; }
+            const randomDegree = Math.floor(Math.random() * 360) + 3600;
+            angle += randomDegree;
+            wheel.classList.add('spinning');
+            setTimeout(() => {
+                wheel.style.transform = `rotate(${angle}deg)`;
+                alert(`Вы попали на: ${words[((angle % 360) / (360 / words.length)) | 0]}`);
+                wheel.classList.remove('spinning');
+            }, 5000);
         });
 
-        document.getElementById('roulette-tab').addEventListener('click', () => {
-            alert('Функционал рулетки будет добавлен позже.');
-            document.getElementById('chat-section').style.display = 'none';
-        });
-    </script>
-</body>
-</html>
+        const chats = { user1: [{ sender: 'user1', message: 'Привет!' }], user2: [{ sender: 'user2', message: 'Как дела?' }] };
+
+        function openChat(user) {
+            const chatMessages = document.getElementById
