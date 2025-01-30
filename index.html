@@ -231,6 +231,19 @@
         .group-chat-button {
             margin-top: 10px;
         }
+        .player-profile {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .player-profile img {
+            width: 100px;
+            height: 100px;
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+        .player-profile p {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -371,6 +384,11 @@
                 <button class="chat-button" onclick="sendMessage()">Отправить</button>
             </div>
             <button class="group-chat-button" onclick="showGroupChat()">Групповой чат</button>
+            <div id="playerProfile" class="player-profile" style="display: none;">
+                <img src="" alt="Аватар" id="foundPlayerAvatar">
+                <p>Ник: <span id="foundPlayerUsername"></span></p>
+                <p>Баланс: <span id="foundPlayerBalance"></span>$</p>
+            </div>
         </div>
     </div>
 
@@ -652,8 +670,14 @@
                     addChatMessage(msg);
                 });
                 document.getElementById('chatInputDiv').style.display = 'block';
+                document.getElementById('playerProfile').style.display = 'block';
+                document.getElementById('foundPlayerUsername').textContent = currentPlayer.name;
+                document.getElementById('foundPlayerAvatar').src = currentPlayer.avatar || '';
+                document.getElementById('foundPlayerBalance').textContent = currentPlayer.balance;
             } else {
                 alert('Игрок не найден');
+                document.getElementById('playerProfile').style.display = 'none';
+                document.getElementById('chatInputDiv').style.display = 'none';
             }
         }
 
@@ -763,6 +787,7 @@
             } else {
                 showContent('roulette');
                 updateProfile();
+                loadGroupChatMessages();
             }
         };
 
@@ -855,17 +880,6 @@
         function setCachedData(key, data) {
             localStorage.setItem(key, JSON.stringify(data));
         }
-
-        // Load cached group chat messages on page load
-        window.onload = function () {
-            if (!user) {
-                document.getElementById('authModal').style.display = 'block';
-            } else {
-                showContent('roulette');
-                updateProfile();
-                loadGroupChatMessages();
-            }
-        };
     </script>
 
 </body>
