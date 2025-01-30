@@ -7,6 +7,7 @@
     <style>
         body {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -17,20 +18,14 @@
             position: relative;
             width: 300px;
             height: 300px;
+            margin-bottom: 20px;
         }
         #wheel {
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: conic-gradient(
-                red 0% 60deg,
-                green 60deg 120deg,
-                blue 120deg 180deg,
-                yellow 180deg 240deg,
-                orange 240deg 300deg,
-                purple 300deg 360deg
-            );
             transition: transform 5s ease-out;
+            position: relative;
         }
         #pointer {
             width: 0;
@@ -43,10 +38,33 @@
             left: calc(50% - 10px);
         }
         #spinButton {
-            margin-top: 20px;
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
+            margin-bottom: 20px;
+        }
+        #wordInput {
+            margin-bottom: 10px;
+        }
+        #addWordButton {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        #wordsList {
+            margin-bottom: 20px;
+        }
+        .word-item {
+            margin: 5px 0;
+        }
+        .segment {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            transform-origin: bottom;
+            font-weight: bold;
+            color: white;
         }
     </style>
 </head>
@@ -58,18 +76,83 @@
 </div>
 <button id="spinButton">Spin!</button>
 
+<div>
+    <input type="text" id="wordInput" placeholder="Введите слово">
+    <button id="addWordButton">Добавить слово</button>
+</div>
+<div id="wordsList"></div>
+
 <script>
     const wheel = document.getElementById('wheel');
     const spinButton = document.getElementById('spinButton');
+    const wordInput = document.getElementById('wordInput');
+    const addWordButton = document.getElementById('addWordButton');
+    const wordsList = document.getElementById('wordsList');
 
+    let words = [];
     let angle = 0;
 
+    function updateWheel() {
+        if (words.length === 0) {
+            wheel.style.background = 'none';
+            wheel.innerHTML = '';
+            return;
+        }
+
+        // Очистка старого содержимого колеса
+        wheel.innerHTML = '';
+
+        let gradient = '';
+        const segmentAngle = 360 / words.length;
+        for (let i = 0; i < words.length; i++) {
+            const startAngle = i * segmentAngle;
+            const endAngle = startAngle + segmentAngle;
+            const color = `hsl(${(i / words.length) * 360}, 100%, 50%)`;
+            gradient += `${color} ${startAngle}deg, ${color} ${endAngle}deg, `;
+        }
+        gradient = gradient.trim().slice(0, -1);
+
+        wheel.style.background = `conic-gradient(${gradient})`;
+
+        // Добавление текста к сегментам
+        for (let i = 0; i < words.length; i++) {
+            const segment = document.createElement('div');
+            segment.className = 'segment';
+            segment.style.transform = `rotate(${(i * segmentAngle) + (segmentAngle / 2)}deg) translate(150px) rotate(${-((i * segmentAngle) + (segmentAngle / 2))}deg)`;
+            segment.innerText = words[i];
+            wheel.appendChild(segment);
+        }
+    }
+
+    addWordButton.addEventListener('click', () => {
+        const word = wordInput.value.trim();
+        if (word && !words.includes(word)) { // Проверка на дублирование слов
+            words.push(word);
+            wordInput.value = '';
+            const wordItem = document.createElement('div');
+            wordItem.className = 'word-item';
+            wordItem.innerText = word;
+            wordsList.appendChild(wordItem);
+            updateWheel();
+        } else if (word) {
+            alert('Это слово уже добавлено!');
+        }
+    });
+
     spinButton.addEventListener('click', () => {
-        // Случайный угол вращения
+        if (words.length === 0) {
+            alert('Пожалуйста, добавьте хотя бы одно слово.');
+            return;
+        }
         const randomDegree = Math.floor(Math.random() * 360) + 3600;
         angle += randomDegree;
         wheel.style.transform = `rotate(${angle}deg)`;
+        const resultIndex = ((angle % 360) / (360 / words.length)) | 0;
+        alert(`Вы попали на: ${words[resultIndex]}`);
     });
+
+    // Начальная инициализация
+    updateWheel();
 </script>
 
 </body>
