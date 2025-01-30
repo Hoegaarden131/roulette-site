@@ -684,6 +684,7 @@
 
         function toggleSettings() {
             document.getElementById('settingsModal').style.display = document.getElementById('settingsModal').style.display === 'block' ? 'none' : 'block';
+            document.getElementById('authModal').style.display = 'none'; // Ensure auth modal is hidden
         }
 
         function saveSettings() {
@@ -716,9 +717,18 @@
             document.getElementById('even_odd-input').style.display = (selectedType === 'even_odd') ? 'block' : 'none';
         });
 
+        // Initialize the game after loading
+        window.onload = function () {
+            if (!user) {
+                document.getElementById('authModal').style.display = 'block';
+            } else {
+                showContent('roulette');
+                updateProfile();
+            }
+        };
+
         updateBalance();
         drawWheel();
-        showContent('roulette'); // Show roulette content by default
     </script>
 
 </body>
