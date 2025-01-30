@@ -24,6 +24,7 @@
             padding: 14px 20px;
             text-decoration: none;
             text-align: center;
+            transition: background-color 0.3s ease;
         }
         .navbar a:hover {
             background-color: #5d6d7e;
@@ -34,9 +35,12 @@
         .content {
             display: none;
             padding: 20px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
         }
         .content.active {
             display: block;
+            opacity: 1;
         }
         .modal {
             position: fixed;
@@ -81,6 +85,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         .form-group button:hover {
             background-color: #c0392b;
@@ -112,6 +117,7 @@
             border-radius: 5px;
             cursor: pointer;
             margin-top: 20px;
+            transition: background-color 0.3s ease;
         }
         .spin-button:hover, .bet-button:hover, .chat-button:hover, .profile-button:hover {
             background-color: #c0392b;
@@ -149,6 +155,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         .chat-input button:hover {
             background-color: #c0392b;
@@ -211,6 +218,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         .settings-form-group button:hover {
             background-color: #c0392b;
@@ -219,6 +227,9 @@
             position: absolute;
             top: 10px;
             right: 10px;
+        }
+        .group-chat-button {
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -359,6 +370,19 @@
                 <input type="text" id="chatInput" placeholder="Введите сообщение...">
                 <button class="chat-button" onclick="sendMessage()">Отправить</button>
             </div>
+            <button class="group-chat-button" onclick="showGroupChat()">Групповой чат</button>
+        </div>
+    </div>
+
+    <!-- Group Chat Content -->
+    <div id="group-chat" class="content">
+        <div class="chat-container">
+            <h2>Групповой чат</h2>
+            <div class="chat-messages" id="groupChatMessages"></div>
+            <div class="chat-input">
+                <input type="text" id="groupChatInput" placeholder="Введите сообщение...">
+                <button class="chat-button" onclick="sendGroupMessage()">Отправить</button>
+            </div>
         </div>
     </div>
 
@@ -378,11 +402,18 @@
                 <p>Баланс игровой валюты: <span id="gameBalance">1000</span>$</p>
                 <button class="profile-button" onclick="addBalance()">Пополнить баланс на 1000$</button>
             </div>
+            <div class="friends-section">
+                <h3>Друзья</h3>
+                <ul id="friendsList"></ul>
+                <input type="text" id="friendSearch" placeholder="Добавить друга...">
+                <button class="profile-button" onclick="addFriend()">Добавить друга</button>
+            </div>
         </div>
     </div>
 
     <audio id="spinSound" src="https://www.soundjay.com/button/sounds/beep-07.mp3" preload="auto"></audio>
     <audio id="winSound" src="https://www.soundjay.com/button/sounds/coin-01a.mp3" preload="auto"></audio>
+    <audio id="loseSound" src="https://www.soundjay.com/button/sounds/fail-buzzer-02.mp3" preload="auto"></audio>
 
     <script>
         let user = null;
@@ -416,7 +447,7 @@
             const password = document.getElementById('register-password').value;
             const players = JSON.parse(localStorage.getItem('players')) || {};
             if (!players[username]) {
-                players[username] = {name: username, password: password, balance: 1000, spins: 0, wins: 0, losses: 0, avatar: '', messages: []};
+                players[username] = {name: username, password: password, balance: 1000, spins: 0, wins: 0, losses: 0, avatar: '', messages: [], friends: []};
                 localStorage.setItem('players', JSON.stringify(players));
                 alert('Регистрация завершена!');
                 document.getElementById('authModal').style.display = 'none';
@@ -474,6 +505,7 @@
             const rouletteWheel = document.getElementById('rouletteWheel');
             const spinSound = document.getElementById('spinSound');
             const winSound = document.getElementById('winSound');
+            const loseSound = document.getElementById('loseSound');
 
             // Play spin sound
             spinSound.play();
@@ -509,9 +541,12 @@
                     user.wins += winAmount;
                     resultText += ` Вы выиграли $${winAmount}!`;
                     winSound.play();
+                    flashResult('green');
                 } else {
                     user.losses += currentBet.amount;
                     resultText += ' Вы проиграли.';
+                    loseSound.play();
+                    flashResult('red');
                 }
 
                 user.balance = Math.max(user.balance, 0);
@@ -654,6 +689,7 @@
             document.getElementById('totalWins').textContent = user.wins;
             document.getElementById('totalLosses').textContent = user.losses;
             updateBalance();
+            updateFriendsList();
         }
 
         function uploadAvatar() {
@@ -732,6 +768,104 @@
 
         // Re-draw the wheel on initialization
         drawWheel();
+
+        // Add animations to buttons
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('click', function () {
+                this.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+            });
+        });
+
+        // Group chat functions
+        function showGroupChat() {
+            showContent('group-chat');
+        }
+
+        function sendGroupMessage() {
+            const message = document.getElementById('groupChatInput').value;
+            if (message.trim() !== '') {
+                const groupChatMessages = JSON.parse(localStorage.getItem('groupChatMessages')) || [];
+                const msg = `${user.name}: ${message}`;
+                groupChatMessages.push(msg);
+                localStorage.setItem('groupChatMessages', JSON.stringify(groupChatMessages));
+                addGroupChatMessage(msg);
+                document.getElementById('groupChatInput').value = '';
+            }
+        }
+
+        function addGroupChatMessage(message) {
+            const chatMessagesDiv = document.getElementById('groupChatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = message;
+            chatMessagesDiv.appendChild(msgDiv);
+            chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
+
+        function loadGroupChatMessages() {
+            const groupChatMessages = JSON.parse(localStorage.getItem('groupChatMessages')) || [];
+            groupChatMessages.forEach(msg => {
+                addGroupChatMessage(msg);
+            });
+        }
+
+        // Friends system
+        function addFriend() {
+            const friendName = document.getElementById('friendSearch').value;
+            const players = JSON.parse(localStorage.getItem('players')) || {};
+            if (players[friendName] && players[friendName].name !== user.name && !user.friends.includes(friendName)) {
+                user.friends.push(friendName);
+                players[user.name] = user;
+                localStorage.setItem('players', JSON.stringify(players));
+                updateFriendsList();
+            } else {
+                alert('Игрок не найден или он уже в друзьях');
+            }
+        }
+
+        function updateFriendsList() {
+            const friendsList = document.getElementById('friendsList');
+            friendsList.innerHTML = '';
+            user.friends.forEach(friend => {
+                const li = document.createElement('li');
+                li.textContent = friend;
+                friendsList.appendChild(li);
+            });
+        }
+
+        // Flash result for emotional feedback
+        function flashResult(color) {
+            const resultElement = document.getElementById('result');
+            resultElement.style.backgroundColor = color;
+            setTimeout(() => {
+                resultElement.style.backgroundColor = '';
+            }, 1000);
+        }
+
+        // Caching data for performance optimization
+        function getCachedData(key) {
+            if (localStorage.getItem(key)) {
+                return JSON.parse(localStorage.getItem(key));
+            }
+            return null;
+        }
+
+        function setCachedData(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        // Load cached group chat messages on page load
+        window.onload = function () {
+            if (!user) {
+                document.getElementById('authModal').style.display = 'block';
+            } else {
+                showContent('roulette');
+                updateProfile();
+                loadGroupChatMessages();
+            }
+        };
     </script>
 
 </body>
