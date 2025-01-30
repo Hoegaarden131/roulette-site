@@ -102,7 +102,7 @@
             left: 50%;
             transform: translateX(-50%);
         }
-        .spin-button, .bet-button, .chat-button {
+        .spin-button, .bet-button, .chat-button, .profile-button {
             display: inline-block;
             padding: 10px 20px;
             font-size: 16px;
@@ -113,7 +113,7 @@
             cursor: pointer;
             margin-top: 20px;
         }
-        .spin-button:hover, .bet-button:hover, .chat-button:hover {
+        .spin-button:hover, .bet-button:hover, .chat-button:hover, .profile-button:hover {
             background-color: #c0392b;
         }
         .result, .balance, .history {
@@ -153,6 +153,73 @@
         .chat-input button:hover {
             background-color: #c0392b;
         }
+        .profile-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: left;
+        }
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border: 2px solid white;
+            border-radius: 50%;
+            margin: 20px auto;
+        }
+        .profile-info {
+            margin: 20px;
+        }
+        .profile-statistics {
+            margin: 20px;
+        }
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .settings-modal-content {
+            background-color: #34495e;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .settings-form-group {
+            margin-bottom: 15px;
+        }
+        .settings-form-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+        }
+        .settings-form-group button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .settings-form-group button:hover {
+            background-color: #c0392b;
+        }
+        .top-right {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -161,6 +228,12 @@
     <div class="navbar">
         <a href="#" onclick="showContent('roulette')" class="active">Рулетка</a>
         <a href="#" onclick="showContent('chat')">Чат</a>
+        <a href="#" onclick="showContent('profile')">Мой профиль</a>
+    </div>
+
+    <!-- Top Right Menu -->
+    <div class="top-right">
+        <button onclick="toggleSettings()">Настройки</button>
     </div>
 
     <!-- Modal for login and registration -->
@@ -194,6 +267,24 @@
                 <div class="form-group">
                     <button class="bet-button" onclick="toggleAuthForm()">Вход</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="settings-modal">
+        <div class="settings-modal-content">
+            <div class="modal-header">Настройки профиля</div>
+            <div class="settings-form-group">
+                <label for="new-username">Сменить ник:</label>
+                <input type="text" id="new-username" placeholder="Новый ник">
+            </div>
+            <div class="settings-form-group">
+                <label for="new-password">Сменить пароль:</label>
+                <input type="password" id="new-password" placeholder="Новый пароль">
+            </div>
+            <div class="settings-form-group">
+                <button onclick="saveSettings()">Сохранить</button>
             </div>
         </div>
     </div>
@@ -271,21 +362,32 @@
         </div>
     </div>
 
+    <!-- Profile Content -->
+    <div id="profile" class="content">
+        <div class="profile-container">
+            <h2>Мой профиль</h2>
+            <img src="" alt="Аватар" class="profile-avatar" id="profileAvatar">
+            <div class="profile-info">
+                <p>Ник: <span id="profileUsername"></span></p>
+                <button class="profile-button" onclick="uploadAvatar()">Загрузить аватар</button>
+            </div>
+            <div class="profile-statistics">
+                <p>Количество прокрутов колеса: <span id="spinsCount">0</span></p>
+                <p>Сумма выигрыша за все время: <span id="totalWins">0</span>$</p>
+                <p>Сумма проигрыша за все время: <span id="totalLosses">0</span>$</p>
+                <p>Баланс игровой валюты: <span id="gameBalance">1000</span>$</p>
+                <button class="profile-button" onclick="addBalance()">Пополнить баланс на 1000$</button>
+            </div>
+        </div>
+    </div>
+
     <audio id="spinSound" src="https://www.soundjay.com/button/sounds/beep-07.mp3" preload="auto"></audio>
     <audio id="winSound" src="https://www.soundjay.com/button/sounds/coin-01a.mp3" preload="auto"></audio>
 
     <script>
-        let userBalance = 1000;
+        let user = null;
         let history = [];
         let currentBet = null;
-        let chatMessages = [];
-        let currentPlayer = null;
-
-        const players = {
-            'player1': {name: 'player1', messages: []},
-            'player2': {name: 'player2', messages: []},
-            'player3': {name: 'player3', messages: []}
-        };
 
         function toggleAuthForm() {
             const loginForm = document.getElementById('login-form');
@@ -295,28 +397,48 @@
         }
 
         function loginUser() {
-            alert('Вход выполнен!');
-            document.getElementById('authModal').style.display = 'none';
-            document.querySelector('.navbar a').classList.add('active');
-            showContent('roulette');
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const players = JSON.parse(localStorage.getItem('players')) || {};
+            if (players[username] && players[username].password === password) {
+                user = players[username];
+                document.getElementById('authModal').style.display = 'none';
+                document.querySelector('.navbar a').classList.add('active');
+                showContent('roulette');
+                updateProfile();
+            } else {
+                alert('Неверное имя пользователя или пароль');
+            }
         }
 
         function registerUser() {
-            alert('Регистрация завершена!');
-            document.getElementById('authModal').style.display = 'none';
-            document.querySelector('.navbar a').classList.add('active');
-            showContent('roulette');
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            const players = JSON.parse(localStorage.getItem('players')) || {};
+            if (!players[username]) {
+                players[username] = {name: username, password: password, balance: 1000, spins: 0, wins: 0, losses: 0, avatar: ''};
+                localStorage.setItem('players', JSON.stringify(players));
+                alert('Регистрация завершена!');
+                document.getElementById('authModal').style.display = 'none';
+                document.querySelector('.navbar a').classList.add('active');
+                showContent('roulette');
+                user = players[username];
+                updateProfile();
+            } else {
+                alert('Этот ник уже занят');
+            }
         }
 
         function updateBalance() {
-            document.getElementById('balance').textContent = `Баланс: $${userBalance}`;
+            document.getElementById('balance').textContent = `Баланс: $${user.balance}`;
+            document.getElementById('gameBalance').textContent = `${user.balance}`;
         }
 
         function placeBet() {
             const betAmount = parseInt(document.getElementById('bet-amount').value);
             const betType = document.getElementById('bet-type').value;
 
-            if (betAmount > userBalance) {
+            if (betAmount > user.balance) {
                 alert('Недостаточно средств!');
                 return;
             }
@@ -336,7 +458,8 @@
                 currentBet = {type: 'even_odd', even_odd: betEvenOdd, amount: betAmount};
             }
 
-            userBalance -= betAmount;
+            user.balance -= betAmount;
+            user.spins += 1;
             updateBalance();
             document.getElementById('result').textContent = 'Ожидание результата...';
         }
@@ -382,18 +505,21 @@
                 }
 
                 if (winAmount > 0) {
-                    userBalance += winAmount;
+                    user.balance += winAmount;
+                    user.wins += winAmount;
                     resultText += ` Вы выиграли $${winAmount}!`;
                     winSound.play();
                 } else {
+                    user.losses += currentBet.amount;
                     resultText += ' Вы проиграли.';
                 }
 
-                userBalance = Math.max(userBalance, 0);
+                user.balance = Math.max(user.balance, 0);
                 updateBalance();
                 resultElement.textContent = resultText;
                 history.push({bet: currentBet, result: randomNumber, win: winAmount});
                 updateHistory();
+                saveUser();
 
                 currentBet = null;
             }, 5000); // Match this timeout with the CSS transition duration
@@ -481,9 +607,12 @@
 
         function findPlayer() {
             const playerName = document.getElementById('search-player').value;
-            if (players[playerName]) {
+            const players = JSON.parse(localStorage.getItem('players')) || {};
+            if (players[playerName] && players[playerName].name !== user.name) {
                 currentPlayer = players[playerName];
                 document.getElementById('chatMessages').innerHTML = '';
+                alert('Игрок найден!');
+                currentPlayer.messages = currentPlayer.messages || [];
                 currentPlayer.messages.forEach(msg => {
                     addChatMessage(msg);
                 });
@@ -500,10 +629,12 @@
 
             const message = document.getElementById('chatInput').value;
             if (message.trim() !== '') {
-                const msg = `Вы: ${message}`;
+                const msg = `${user.name}: ${message}`;
+                currentPlayer.messages = currentPlayer.messages || [];
                 currentPlayer.messages.push(msg);
                 addChatMessage(msg);
                 document.getElementById('chatInput').value = '';
+                savePlayer(currentPlayer);
             }
         }
 
@@ -513,6 +644,69 @@
             msgDiv.textContent = message;
             chatMessagesDiv.appendChild(msgDiv);
             chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+        }
+
+        function updateProfile() {
+            document.getElementById('profileUsername').textContent = user.name;
+            document.getElementById('profileAvatar').src = user.avatar || '';
+            document.getElementById('spinsCount').textContent = user.spins;
+            document.getElementById('totalWins').textContent = user.wins;
+            document.getElementById('totalLosses').textContent = user.losses;
+            updateBalance();
+        }
+
+        function uploadAvatar() {
+            const avatarUrl = prompt('Введите URL аватара:');
+            if (avatarUrl) {
+                user.avatar = avatarUrl;
+                document.getElementById('profileAvatar').src = avatarUrl;
+                saveUser();
+            }
+        }
+
+        function addBalance() {
+            user.balance += 1000;
+            updateBalance();
+            saveUser();
+        }
+
+        function saveUser() {
+            const players = JSON.parse(localStorage.getItem('players')) || {};
+            players[user.name] = user;
+            localStorage.setItem('players', JSON.stringify(players));
+        }
+
+        function savePlayer(player) {
+            const players = JSON.parse(localStorage.getItem('players')) || {};
+            players[player.name] = player;
+            localStorage.setItem('players', JSON.stringify(players));
+        }
+
+        function toggleSettings() {
+            document.getElementById('settingsModal').style.display = document.getElementById('settingsModal').style.display === 'block' ? 'none' : 'block';
+        }
+
+        function saveSettings() {
+            const newUsername = document.getElementById('new-username').value;
+            const newPassword = document.getElementById('new-password').value;
+            const players = JSON.parse(localStorage.getItem('players')) || {};
+
+            if (newUsername && newUsername !== user.name && !players[newUsername]) {
+                delete players[user.name];
+                user.name = newUsername;
+                user.password = newPassword || user.password;
+                players[newUsername] = user;
+                localStorage.setItem('players', JSON.stringify(players));
+                alert('Ник изменен!');
+            } else if (newPassword) {
+                user.password = newPassword;
+                players[user.name] = user;
+                localStorage.setItem('players', JSON.stringify(players));
+                alert('Пароль изменен!');
+            } else {
+                alert('Ошибка при изменении данных');
+            }
+            document.getElementById('settingsModal').style.display = 'none';
         }
 
         document.getElementById('bet-type').addEventListener('change', function () {
