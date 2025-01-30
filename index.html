@@ -15,6 +15,18 @@
             margin: 0;
             font-family: Arial, sans-serif;
         }
+        nav {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            background-color: #ccc;
+            padding: 10px 0;
+        }
+        .nav-item {
+            margin: 0 20px;
+            cursor: pointer;
+            font-size: 24px;
+        }
         #auth-modal {
             display: none;
             position: fixed;
@@ -39,7 +51,8 @@
         .form-group label {
             display: block;
             margin-bottom: 5px;
-            font-weight: bold; /* Жирная рамка над текстом */
+            font-weight: bold; /* Жирная рамка */
+            font-size: 21px; /* Увеличиваем шрифт */
         }
         .form-group input {
             width: 100%;
@@ -87,7 +100,7 @@
         }
         #addWordButton {
             padding: 7.5px 15px; /* Увеличиваем кнопку в 1.5 раза */
-            font-size: 21px; /* Увеличиваем шрифт */
+            font-size: 16px; /* Увеличиваем шрифт */
             cursor: pointer;
             margin-bottom: 30px; /* Увеличиваем отступ */
         }
@@ -118,9 +131,51 @@
             cursor: pointer;
             margin-bottom: 30px; /* Увеличиваем отступ */
         }
+        #profile-section {
+            display: none;
+            width: 100%;
+            padding: 20px;
+        }
+        #profile-header {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        #profile-stats {
+            margin-bottom: 20px;
+        }
+        #friends-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #search-users {
+            margin-top: 20px;
+        }
+        #user-profile {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        .chat-window {
+            display: none;
+            width: 300px;
+            height: 400px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            position: fixed;
+            right: 10px;
+            bottom: 10px;
+        }
     </style>
 </head>
 <body>
+    <nav>
+        <div class="nav-item" id="roulette-tab">Рулетка</div>
+        <div class="nav-item" id="profile-tab">Профиль</div>
+    </nav>
     <div id="auth-modal">
         <div id="auth-box">
             <div class="auth-form">
@@ -151,7 +206,27 @@
     </div>
     <div id="wordsList"></div>
     <button id="logoutButton">Выйти</button>
-
+    <div id="profile-section">
+        <div id="profile-header"></div>
+        <div id="profile-stats">
+            <p>Количество прокруток колеса: <span id="spins-count">0</span></p>
+            <p>Количество друзей: <span id="friends-count">0</span></p>
+        </div>
+        <div id="friends-list">
+            <p>Список друзей:</p>
+            <ul id="friends-ul"></ul>
+        </div>
+        <div id="search-users">
+            <input type="text" id="search-input" placeholder="Поиск по логинам">
+            <div id="user-profile"></div>
+        </div>
+    </div>
+    <div id="chat-window" class="chat-window">
+        <div id="chat-header"></div>
+        <div id="chat-messages" style="overflow-y: auto; height: 300px;"></div>
+        <input type="text" id="message-input" placeholder="Введите сообщение">
+        <button id="send-message-button">Отправить</button>
+    </div>
     <script>
         const wheel = document.getElementById('wheel');
         const spinButton = document.getElementById('spinButton');
@@ -161,6 +236,7 @@
         let words = [];
         let angle = 0;
         let isAdmin = false;
+        let spinsCount = 0;
 
         function updateWheel() {
             if (words.length === 0) {
@@ -218,10 +294,11 @@
                 const resultIndex = ((angle % 360) / (360 / words.length)) | 0;
                 alert(`Вы попали на: ${words[resultIndex]}`);
                 wheel.classList.remove('spinning');
+                spinsCount++;
+                document.getElementById('spins-count').innerText = spinsCount;
             }, 5000); // Задержка до воспроизведения результата
         });
 
-        // Логика аутентификации
         const authModal = document.getElementById('auth-modal');
         const loginForm = document.querySelector('.auth-form');
         const loginButton = document.getElementById('loginButton');
@@ -252,32 +329,6 @@
             return /^\d{4}$/.test(password);
         }
 
-        loginButton.addEventListener('click', () => {
-            const login = loginInput.value.trim();
-            const password = passwordInput.value.trim();
-            if (validateLogin(login) && validatePassword(password)) {
-                if (login === adminLogin && password === adminPassword) {
-                    isAdmin = true;
-                    localStorage.setItem('isAdmin', 'true');
-                } else if (users[login] === password) {
-                    isAdmin = false;
-                    localStorage.setItem('isAdmin', 'false');
-                } else {
-                    alert('Неверный логин или пароль.');
-                    return;
-                }
-                hideAuthModal();
-                document.getElementById('wheel-container').style.display = 'block';
-                if (isAdmin) {
-                    document.getElementById('admin-controls').style.display = 'block';
-                }
-                localStorage.setItem('storedLogin', login);
-                localStorage.setItem('storedPassword', password);
-            } else {
-                alert('Неверный логин или пароль.');
-            }
-        });
-
         registerButton.addEventListener('click', () => {
             const registerFormHtml = `
                 <h2>Регистрация</h2>
@@ -287,7 +338,7 @@
                 </div>
                 <div class="form-group">
                     <label for="new-password">Пароль:</label>
-                    <input type="password" id="new-password" placeholder="Введите пароль (4 цифры)">
+                    <input type="password" id="new-password" placeholder="Введите пароль">
                 </div>
                 <div class="form-group">
                     <label for="confirm-password">Подтвердите пароль:</label>
@@ -307,6 +358,7 @@
                 const newLogin = newLoginInput.value.trim();
                 const newPassword = newPasswordInput.value.trim();
                 const confirmPassword = confirmPasswordInput.value.trim();
+
                 if (!validateLogin(newLogin)) {
                     alert('Логин должен содержать только латинские буквы и быть не более 8 символов.');
                     return;
@@ -323,9 +375,11 @@
                     alert('Пользователь с таким логином уже существует.');
                     return;
                 }
+
                 users[newLogin] = newPassword;
                 localStorage.setItem('users', JSON.stringify(users));
                 alert('Регистрация успешно завершена! Теперь вы можете войти.');
+
                 loginForm.innerHTML = `
                     <h2>Авторизация</h2>
                     <div class="form-group">
@@ -355,12 +409,14 @@
                 const storedLogin = localStorage.getItem('storedLogin');
                 const storedPassword = localStorage.getItem('storedPassword');
                 const storedIsAdmin = localStorage.getItem('isAdmin') === 'true';
+
                 if (storedLogin && storedPassword && users[storedLogin] === storedPassword) {
                     document.getElementById('wheel-container').style.display = 'block';
                     isAdmin = storedIsAdmin;
                     if (isAdmin) {
                         document.getElementById('admin-controls').style.display = 'block';
                     }
+                    initializeProfile();
                 } else {
                     showAuthModal();
                 }
@@ -370,11 +426,13 @@
         loginButton.addEventListener('click', () => {
             const login = loginInput.value.trim();
             const password = passwordInput.value.trim();
+
             if (validateLogin(login) && validatePassword(password) && users[login] === password) {
                 localStorage.setItem('storedLogin', login);
                 localStorage.setItem('storedPassword', password);
                 hideAuthModal();
                 document.getElementById('wheel-container').style.display = 'block';
+
                 if (login === adminLogin && password === adminPassword) {
                     isAdmin = true;
                     localStorage.setItem('isAdmin', 'true');
@@ -384,6 +442,7 @@
                     localStorage.setItem('isAdmin', 'false');
                     document.getElementById('admin-controls').style.display = 'none';
                 }
+                initializeProfile();
             } else {
                 alert('Неверный логин или пароль.');
             }
@@ -395,19 +454,29 @@
             localStorage.removeItem('isAdmin');
             document.getElementById('wheel-container').style.display = 'none';
             document.getElementById('admin-controls').style.display = 'none';
+            document.getElementById('profile-section').style.display = 'none';
+            document.getElementById('roulette-tab').classList.remove('active');
+            document.getElementById('profile-tab').classList.remove('active');
             showAuthModal();
         });
 
-        // Добавляем обработчик событий для кнопок удаления слов
-        document.addEventListener('click', function(event) {
-            if (event.target.classList.contains('delete-word-button')) {
-                const wordItem = event.target.parentElement;
-                const word = wordItem.innerText.split(' ')[0];
-                words = words.filter(w => w !== word);
-                wordItem.remove();
-                updateWheel();
-            }
+        document.getElementById('roulette-tab').addEventListener('click', () => {
+            document.getElementById('profile-section').style.display = 'none';
+            document.getElementById('wheel-container').style.display = 'block';
+            document.getElementById('roulette-tab').classList.add('active');
+            document.getElementById('profile-tab').classList.remove('active');
         });
+
+        document.getElementById('profile-tab').addEventListener('click', () => {
+            document.getElementById('wheel-container').style.display = 'none';
+            document.getElementById('profile-section').style.display = 'block';
+            document.getElementById('profile-tab').classList.add('active');
+            document.getElementById('roulette-tab').classList.remove('active');
+        });
+
+        function initializeProfile() {
+            // Здесь можно добавить код для инициализации профиля пользователя
+        }
     </script>
 </body>
 </html>
