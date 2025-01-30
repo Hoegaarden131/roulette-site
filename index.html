@@ -6,53 +6,245 @@
     <title>Мессенджер</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; }
-        header, footer, .menu, .chat, .send-panel { padding: 10px; }
-        header, footer { background: #2a496f; color: white; text-align: center; }
-        .menu { display: flex; justify-content: space-between; background: #3b5998; }
-        .menu a { color: white; padding: 10px; text-decoration: none; }
+        header, footer { background: #2a496f; color: white; text-align: center; padding: 10px; }
+        .container { display: flex; height: calc(100vh - 80px); }
+        .menu { width: 250px; background: #3b5998; color: white; padding: 10px; }
+        .menu a { color: white; padding: 10px; text-decoration: none; display: block; }
         .menu a:hover { background: #4c70b0; }
-        .content { display: flex; height: calc(100vh - 100px); }
-        .chat { flex: 1; overflow-y: auto; border-right: 1px solid #ccc; padding: 10px; }
-        .message { margin: 5px 0; padding: 10px; border-radius: 5px; max-width: 70%; }
+        .content { flex: 1; display: flex; }
+        .chat-list { width: 250px; border-right: 1px solid #ccc; padding: 10px; }
+        .chat-item { padding: 10px; cursor: pointer; border-bottom: 1px solid #ccc; display: flex; align-items: center; }
+        .chat-item img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; }
+        .chat-item.active { background: #f0f0f0; }
+        .chat-content { flex: 1; display: flex; flex-direction: column; }
+        .chat-header { padding: 10px; border-bottom: 1px solid #ccc; }
+        .chat-body { flex: 1; overflow-y: auto; padding: 10px; }
+        .message { margin: 5px 0; padding: 10px; border-radius: 5px; max-width: 70%; position: relative; }
         .from-me { background: #d9edf7; align-self: flex-end; }
         .from-them { background: #f5f5f5; align-self: flex-start; }
+        .time { font-size: 0.8em; color: #777; position: absolute; bottom: 5px; right: 10px; }
         .send-panel { display: flex; padding: 10px; border-top: 1px solid #ccc; }
         .send-panel input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
         .send-panel button { padding: 10px; margin-left: 10px; background: #3b5998; color: white; border: none; border-radius: 5px; cursor: pointer; }
         .send-panel button:hover { background: #4c70b0; }
+        .file-input { display: none; }
+        .attach-button { padding: 10px; margin-left: 10px; background: #3b5998; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .attach-button:hover { background: #4c70b0; }
+        .notification { position: fixed; bottom: 10px; right: 10px; background: #3b5998; color: white; padding: 10px; border-radius: 5px; display: none; }
+        .auth-form { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+        .auth-form div { margin-bottom: 10px; }
+        .auth-form input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+        .auth-form button { padding: 10px; background: #3b5998; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .auth-form button:hover { background: #4c70b0; }
     </style>
 </head>
 <body>
     <header>Мессенджер</header>
-    <div class="menu">
-        <a href="#">Главная</a>
-        <a href="#">Чаты</a>
-        <a href="#">Настройки</a>
-    </div>
-    <div class="content">
-        <div class="chat">
-            <div class="message from-them">Привет! Как дела?</div>
-            <div class="message from-me">Всё отлично, спасибо!</div>
-            <!-- Добавьте больше сообщений здесь -->
-        </div>
-        <div class="send-panel">
-            <input type="text" placeholder="Введите сообщение..." id="messageInput">
-            <button onclick="sendMessage()">Отправить</button>
-        </div>
+    <div class="container" id="mainContainer">
+        <!-- Auth forms will be populated here -->
     </div>
     <footer>© 2023 Мессенджер</footer>
 
+    <div class="notification" id="notification"></div>
+
     <script>
+        let currentUser = null;
+        let currentChat = null;
+        let chats = [];
+
+        function showPage(page) {
+            document.getElementById('mainContainer').innerHTML = '';
+            if (page === 'chats') {
+                loadChats();
+            } else if (page === 'profile') {
+                loadProfile();
+            } else if (page === 'login') {
+                showLoginForm();
+            } else if (page === 'register') {
+                showRegisterForm();
+            }
+        }
+
+        function loadChats() {
+            const chatList = document.createElement('div');
+            chatList.className = 'chat-list';
+            chatList.id = 'chatList';
+            chatList.innerHTML = '';
+            chats.forEach(chat => {
+                const chatItem = document.createElement('div');
+                chatItem.className = 'chat-item';
+                chatItem.onclick = () => selectChat(chat);
+                chatItem.innerHTML = `<img src="${chat.avatar}" alt="${chat.name}"><span>${chat.name}</span>`;
+                chatList.appendChild(chatItem);
+            });
+            const chatContent = document.createElement('div');
+            chatContent.className = 'chat-content';
+            chatContent.innerHTML = `
+                <div class="chat-header">
+                    <h3 id="chatTitle">Выберите чат</h3>
+                </div>
+                <div class="chat-body" id="chatBody">
+                </div>
+                <div class="send-panel">
+                    <input type="text" placeholder="Введите сообщение..." id="messageInput" onkeypress="if(event.key === 'Enter') sendMessage()">
+                    <button onclick="sendMessage()">Отправить</button>
+                    <button class="attach-button" onclick="document.getElementById('fileInput').click()">Прикрепить</button>
+                    <input type="file" id="fileInput" class="file-input" onchange="uploadFile()">
+                </div>`;
+            document.getElementById('mainContainer').appendChild(chatList);
+            document.getElementById('mainContainer').appendChild(chatContent);
+        }
+
+        function selectChat(chat) {
+            currentChat = chat;
+            document.getElementById('chatTitle').innerText = chat.name;
+            document.getElementById('chatBody').innerHTML = '';
+            chat.messages.forEach(message => addMessageToChat(message));
+            document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+            document.querySelector(`.chat-item span`).parentNode.classList.add('active');
+        }
+
+        function addMessageToChat(message) {
+            const chatBody = document.getElementById('chatBody');
+            const newMessage = document.createElement('div');
+            newMessage.className = `message ${message.fromMe ? 'from-me' : 'from-them'}`;
+            newMessage.innerHTML = `${message.text}<div class="time">${new Date(message.time).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</div>`;
+            chatBody.appendChild(newMessage);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
         function sendMessage() {
             const messageInput = document.getElementById('messageInput');
             const messageText = messageInput.value.trim();
-            if (messageText) {
-                const chat = document.querySelector('.chat');
-                const newMessage = `<div class="message from-me">${messageText}</div>`;
-                chat.innerHTML += newMessage;
+            if (messageText && currentChat) {
+                const newMessage = { text: messageText, time: new Date().getTime(), fromMe: true };
+                currentChat.messages.push(newMessage);
+                addMessageToChat(newMessage);
                 messageInput.value = '';
-                chat.scrollTop = chat.scrollHeight;
+                replyToMessage(currentChat, messageText);
             }
+        }
+
+        function replyToMessage(chat, message) {
+            const botReply = getBotReply(message);
+            const newMessage = { text: botReply, time: new Date().getTime(), fromMe: false };
+            chat.messages.push(newMessage);
+            setTimeout(() => {
+                addMessageToChat(newMessage);
+                showNotification(`Новое сообщение от ${chat.name}`);
+            }, 1000);
+        }
+
+        function getBotReply(message) {
+            if (message.toLowerCase().includes("привет")) return "Привет!";
+            else if (message.toLowerCase().includes("как дела")) return "Всё отлично, спасибо!";
+            else return "Не понял...";
+        }
+
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (file) {
+                const newMessage = { text: `Файл: ${file.name}`, time: new Date().getTime(), fromMe: true };
+                currentChat.messages.push(newMessage);
+                addMessageToChat(newMessage);
+                fileInput.value = '';
+            }
+        }
+
+        function showNotification(text) {
+            const notification = document.getElementById('notification');
+            notification.innerText = text;
+            notification.style.display = 'block';
+            setTimeout(() => notification.style.display = 'none', 3000);
+        }
+
+        function loadProfile() {
+            document.getElementById('mainContainer').innerHTML = `
+                <div style="padding: 20px;">
+                    <h2>Профиль</h2>
+                    <p>Имя: <input type="text" id="profileName" value="${currentUser ? currentUser.name : ''}"></p>
+                    <p>Аватар: <input type="file" id="profileAvatar"></p>
+                    <button onclick="saveProfile()">Сохранить</button>
+                </div>`;
+        }
+
+        function saveProfile() {
+            const profileName = document.getElementById('profileName').value;
+            const profileAvatar = document.getElementById('profileAvatar').files[0];
+            if (profileName) {
+                currentUser = { name: profileName, avatar: profileAvatar ? URL.createObjectURL(profileAvatar) : currentUser.avatar };
+                alert('Профиль сохранен!');
+            }
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            showPage('login');
+        }
+
+        function showLoginForm() {
+            document.getElementById('mainContainer').innerHTML = `
+                <div class="auth-form">
+                    <div><input type="text" id="loginUsername" placeholder="Имя пользователя"></div>
+                    <div><input type="password" id="loginPassword" placeholder="Пароль"></div>
+                    <div><button onclick="login()">Войти</button></div>
+                    <div><button onclick="showPage('register')">Регистрация</button></div>
+                </div>`;
+        }
+
+        function showRegisterForm() {
+            document.getElementById('mainContainer').innerHTML = `
+                <div class="auth-form">
+                    <div><input type="text" id="registerUsername" placeholder="Имя пользователя"></div>
+                    <div><input type="password" id="registerPassword" placeholder="Пароль"></div>
+                    <div><input type="text" id="registerName" placeholder="Имя"></div>
+                    <div><input type="file" id="registerAvatar"></div>
+                    <div><button onclick="register()">Зарегистрироваться</button></div>
+                    <div><button onclick="showPage('login')">Войти</button></div>
+                </div>`;
+        }
+
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const user = users.find(user => user.username === username && user.password === password);
+            if (user) {
+                currentUser = { name: user.name, avatar: user.avatar };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                chats = user.chats || [];
+                showPage('chats');
+            } else {
+                alert('Неверное имя пользователя или пароль');
+            }
+        }
+
+        function register() {
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const name = document.getElementById('registerName').value;
+            const avatar = document.getElementById('registerAvatar').files[0] ? URL.createObjectURL(document.getElementById('registerAvatar').files[0]) : 'https://via.placeholder.com/40';
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            if (!users.find(user => user.username === username)) {
+                const newUser = { username, password, name, avatar, chats: [] };
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                alert('Регистрация успешна! Теперь вы можете войти.');
+                showPage('login');
+            } else {
+                alert('Пользователь с таким именем уже существует');
+            }
+        }
+
+        // Initialize the app by showing the login page
+        if (localStorage.getItem('currentUser')) {
+            currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            chats = JSON.parse(localStorage.getItem('chats')) || [];
+            showPage('chats');
+        } else {
+            showPage('login');
         }
     </script>
 </body>
