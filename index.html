@@ -12,32 +12,20 @@
             text-align: center;
             padding: 50px;
         }
-        .roulette-wheel {
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            background: conic-gradient(
-                red 0% 14.28%, 
-                black 14.28% 28.56%, 
-                red 28.56% 42.84%, 
-                black 42.84% 57.12%, 
-                red 57.12% 71.4%, 
-                black 71.4% 85.68%, 
-                red 85.68% 100%
-            );
-            margin: 0 auto;
+        .roulette-container {
             position: relative;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            transition: transform 5s ease-out;
+            width: 400px;
+            height: 400px;
+            margin: 0 auto;
         }
         .roulette-pointer {
             width: 0;
             height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-bottom: 30px solid white;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 40px solid white;
             position: absolute;
-            top: -30px;
+            top: -40px;
             left: 50%;
             transform: translateX(-50%);
         }
@@ -95,7 +83,20 @@
         </div>
     </div>
 
-    <div class="roulette-wheel" id="rouletteWheel">
+    <div class="roulette-container" id="rouletteContainer">
+        <svg viewBox="-200 -200 400 400" id="rouletteWheel">
+            <!-- Draw the wheel sectors -->
+            <defs>
+                <linearGradient id="sectorGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:red;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:black;stop-opacity:1" />
+                </linearGradient>
+            </defs>
+            <g id="wheelSectors">
+                <!-- Add sectors here dynamically with JavaScript -->
+            </g>
+            <circle cx="0" cy="0" r="150" fill="none" stroke="white" stroke-width="10" />
+        </svg>
         <div class="roulette-pointer"></div>
     </div>
 
@@ -268,6 +269,60 @@
             });
         }
 
+        function drawWheel() {
+            const wheelSectors = document.getElementById('wheelSectors');
+            const numbers = [
+                [0, "green"], [32, "red"], [15, "black"], [19, "red"], [4, "black"], [21, "red"], [2, "black"], [25, "red"],
+                [17, "black"], [34, "red"], [6, "black"], [27, "red"], [13, "black"], [36, "red"], [11, "black"], [30, "red"],
+                [8, "black"], [23, "red"], [10, "black"], [5, "red"], [24, "black"], [16, "red"], [33, "black"], [1, "red"],
+                [20, "black"], [14, "red"], [31, "black"], [9, "red"], [22, "black"], [18, "red"], [29, "black"], [7, "red"],
+                [28, "black"], [12, "red"], [35, "black"], [3, "red"], [26, "black"]
+            ];
+
+            const numSectors = numbers.length;
+            const angleStep = 360 / numSectors;
+
+            for (let i = 0; i < numSectors; i++) {
+                const [number, color] = numbers[i];
+                const startAngle = angleStep * i;
+                const endAngle = angleStep * (i + 1);
+
+                const largeArcFlag = endAngle - startAngle <= 180 ? 0 : 1;
+
+                const startX = 150 * Math.cos(Math.PI * (startAngle - 90) / 180);
+                const startY = 150 * Math.sin(Math.PI * (startAngle - 90) / 180);
+                const endX = 150 * Math.cos(Math.PI * (endAngle - 90) / 180);
+                const endY = 150 * Math.sin(Math.PI * (endAngle - 90) / 180);
+
+                const pathData = [
+                    `M ${startX} ${startY}`,
+                    `A 150 150 0 ${largeArcFlag} 1 ${endX} ${endY}`,
+                    `L 0 0`
+                ].join(' ');
+
+                const sector = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                sector.setAttribute("d", pathData);
+                sector.setAttribute("fill", color);
+                wheelSectors.appendChild(sector);
+
+                // Add number text
+                const midAngle = (startAngle + endAngle) / 2;
+                const textRadius = 120;
+                const textX = textRadius * Math.cos(Math.PI * (midAngle - 90) / 180);
+                const textY = textRadius * Math.sin(Math.PI * (midAngle - 90) / 180);
+
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", textX);
+                text.setAttribute("y", textY);
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("dominant-baseline", "central");
+                text.setAttribute("font-size", "20");
+                text.setAttribute("fill", color === "green" ? "white" : "white");
+                text.textContent = number.toString();
+                wheelSectors.appendChild(text);
+            }
+        }
+
         document.getElementById('bet-type').addEventListener('change', function () {
             const selectedType = this.value;
             document.getElementById('number-input').style.display = (selectedType === 'number') ? 'block' : 'none';
@@ -276,6 +331,7 @@
         });
 
         updateBalance();
+        drawWheel();
     </script>
 
 </body>
